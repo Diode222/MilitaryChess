@@ -1,9 +1,15 @@
 package utils;
 
+import chessPostionInfo.Position;
 import global.BoardInfo;
+import global.ChessType;
 import global.PositionType;
+import junqi.JunQiMove;
+import mcts.Move;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ListUDG {
 
@@ -399,6 +405,132 @@ public class ListUDG {
             else {
                 node.nextEdge = mVexs[indexStart].edgeHead;
                 mVexs[indexStart].edgeHead = node;
+            }
+        }
+    }
+
+    // 判断棋盘上能否从一个点到另一个点（需要比较棋子大小，当目标位置棋子比当前位置棋子大时，则算不能移动到达，
+    // 路径中间有棋子挡住时，则不能到达）
+    static public void canMoveTo(int[][] board, int currentPlayer, int nowX, int nowY,
+                                 int targetX, int targetY, List<Move> moves) {
+        int nowChessId = board[nowX][nowY];
+        int nowChessType = ChessType.getType(nowChessId);
+        int nowPositionType = PositionType.getType(nowX, nowY);
+
+        int targetChessId = board[targetX][targetY];
+        int targetChessType = ChessType.getType(targetChessId);
+        int targetPositionType = PositionType.getType(targetX, targetY);
+
+        // 目标位置棋子为己方棋子，则不能够移动
+        if (currentPlayer == 0 && targetChessId <= 25 && targetChessId != 0
+            || currentPlayer == 1 && targetChessId >= 26) {
+            return;
+        }
+
+        // 目标棋子比当前棋子大，不能移动（炸弹除外）
+        if (!ChessStrengthCompare.isStrongerOrEqualThan(nowChessId, targetChessId)
+                && nowChessType != ChessType.BOOM_CHESS) {
+            return;
+        }
+
+        // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达，
+        if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
+            int index = nowX * BoardInfo.LENGTH + nowY;
+            ENode head = mVexs[index].edgeHead;
+            while (head != null) {
+                if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
+                    List<Position> positions = new ArrayList<>(); // 找到的一条路径
+                    positions.add(new Position().setX(nowX).setY(nowY).build());
+                    positions.add(new Position().setX(targetX).setY(targetY).build());
+                    JunQiMove move = new JunQiMove(positions);
+                    moves.add(move);
+                    head = null;
+                    return;
+                }
+                head = head.nextEdge;
+            }
+            return;
+        }
+
+        // 当前在普通位置或行营位置，则只能移动到直接相邻处（判断语句里面逻辑和上面一样）
+        if (nowPositionType == PositionType.NORMAL_POSITION || nowPositionType == PositionType.CAMP_POSITION) {
+            int index = nowX * BoardInfo.LENGTH + nowY;
+            ENode head = mVexs[index].edgeHead;
+            while (head != null) {
+                if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
+                    List<Position> positions = new ArrayList<>(); // 找到的一条路径
+                    positions.add(new Position().setX(nowX).setY(nowY).build());
+                    positions.add(new Position().setX(targetX).setY(targetY).build());
+                    JunQiMove move = new JunQiMove(positions);
+                    moves.add(move);
+                    head = null;
+                    return;
+                }
+                head = head.nextEdge;
+            }
+            return;
+        }
+
+        // 大本营位置已经在外面进行了过滤
+
+        // 只剩下当前位置在铁路，且目标位置也在铁路的情况（判断语句用来方便看清逻辑）
+        if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType == PositionType.RAILWAY_POSITION) {
+            if (nowChessType == ChessType.SOLDIER_CHESS) {
+                // 当前是工兵，可以拐弯（最复杂的路径判断）
+                
+            } else {
+                // 当前是司令~排长，或炸弹，不可以拐弯（地雷和军旗已经在外面过滤掉了）
+                if (nowX != targetX && nowY != targetY) {
+                    // 不在同一条直线上，肯定不能移动（ps：由于都在铁路，斜对角是不可能的）
+                    return;
+                } else if (nowX != targetX) {
+                    int start;
+                    int end;
+                    if (nowX < targetX) {
+                        start = nowX;
+                        end = targetX;
+                    } else {
+                        start = targetX;
+                        end = nowX;
+                    }
+                    for (int i = start + 1; i < end; i++) {
+                        // 路径上存在其它棋子，不能移动
+                        if (board[i][nowY] != 0) {
+                            return;
+                        }
+                    }
+                    // 路径畅通，可以移动
+                    List<Position> positions = new ArrayList<>(); // 找到的一条路径
+                    positions.add(new Position().setX(nowX).setY(nowY).build());
+                    positions.add(new Position().setX(targetX).setY(targetY).build());
+                    JunQiMove move = new JunQiMove(positions);
+                    moves.add(move);
+                    return;
+                } else if (nowY != targetY) {
+                    int start;
+                    int end;
+                    if (nowY < targetY) {
+                        start = nowY;
+                        end = targetY;
+                    } else {
+                        start = targetY;
+                        end = nowY;
+                    }
+                    for (int i = start + 1; i < end; i++) {
+                        // 路径上存在其它棋子，不能移动
+                        if (board[nowX][i] != 0) {
+                            return;
+                        }
+                    }
+                    // 路径畅通，可以移动
+                    List<Position> positions = new ArrayList<>(); // 找到的一条路径
+                    positions.add(new Position().setX(nowX).setY(nowY).build());
+                    positions.add(new Position().setX(targetX).setY(targetY).build());
+                    JunQiMove move = new JunQiMove(positions);
+                    moves.add(move);
+                    return;
+                }
+                // 相等的情况在外面已经做了过滤
             }
         }
     }

@@ -56,7 +56,7 @@ public class JunQiBoard implements Board {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
                 int chessId = board[i][j];
-                if(chessId == 0) {
+                if(chessId == 0 || currentPlayer == 0 && chessId >= 26 || currentPlayer == 1 && chessId <= 25) {
                     continue;
                 }
 
