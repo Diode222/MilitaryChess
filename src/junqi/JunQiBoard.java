@@ -85,7 +85,7 @@ public class JunQiBoard implements Board {
                         }
 
                         // 判断能够从(i, j)移动棋子到(u, v)，若能移动，将移动路径存入moves
-                        ListUDG.canMoveTo(board, currentPlayer, i, j, u, v, moves);
+                        ListUDG.canMoveTo(board, i, j, u, v, moves);
                     }
                 }
             }

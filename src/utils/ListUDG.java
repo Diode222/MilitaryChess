@@ -411,7 +411,7 @@ public class ListUDG {
 
     // 判断棋盘上能否从一个点到另一个点（需要比较棋子大小，当目标位置棋子比当前位置棋子大时，则算不能移动到达，
     // 路径中间有棋子挡住时，则不能到达）
-    static public void canMoveTo(int[][] board, int currentPlayer, int nowX, int nowY,
+    static public void canMoveTo(int[][] board, int nowX, int nowY,
                                  int targetX, int targetY, List<Move> moves) {
         int nowChessId = board[nowX][nowY];
         int nowChessType = ChessType.getType(nowChessId);
