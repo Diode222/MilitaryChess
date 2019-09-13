@@ -37,8 +37,8 @@ public class ListUDG {
     // 顶点对应的数组
     static private VNode[] mVexs = new VNode[60];
 
-    // 顶点数组各个点位置快速查找
-    static private HashMap<String, Integer> mVexsMap;
+    // 顶点数组中各个位置快速查找
+    static private HashMap<String, Integer> mVexsMap = new HashMap<>();
 
     static {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
@@ -421,17 +421,9 @@ public class ListUDG {
         int targetChessType = ChessType.getType(targetChessId);
         int targetPositionType = PositionType.getType(targetX, targetY);
 
-        // 目标位置棋子为己方棋子，则不能够移动
-        if (currentPlayer == 0 && targetChessId <= 25 && targetChessId != 0
-            || currentPlayer == 1 && targetChessId >= 26) {
-            return;
-        }
+        // 目标位置棋子为己方棋子，则不能够移动（在外面已经过滤掉了这种情况）
 
-        // 目标棋子比当前棋子大，不能移动（炸弹除外）
-        if (!ChessStrengthCompare.isStrongerOrEqualThan(nowChessId, targetChessId)
-                && nowChessType != ChessType.BOOM_CHESS) {
-            return;
-        }
+        // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）（在外面已经过滤掉了这种情况）
 
         // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达，
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
@@ -444,7 +436,6 @@ public class ListUDG {
                     positions.add(new Position().setX(targetX).setY(targetY).build());
                     JunQiMove move = new JunQiMove(positions);
                     moves.add(move);
-                    head = null;
                     return;
                 }
                 head = head.nextEdge;
@@ -463,7 +454,6 @@ public class ListUDG {
                     positions.add(new Position().setX(targetX).setY(targetY).build());
                     JunQiMove move = new JunQiMove(positions);
                     moves.add(move);
-                    head = null;
                     return;
                 }
                 head = head.nextEdge;
@@ -476,8 +466,11 @@ public class ListUDG {
         // 只剩下当前位置在铁路，且目标位置也在铁路的情况（判断语句用来方便看清逻辑）
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType == PositionType.RAILWAY_POSITION) {
             if (nowChessType == ChessType.SOLDIER_CHESS) {
-                // 当前是工兵，可以拐弯（最复杂的路径判断）
-                
+                // 当前是工兵，可以拐弯（最复杂的路径判断，不需要找到最短路径，只需找出一条可行路径即可，因此使用dfs）
+                List<Position> positions = new ArrayList<>();
+                positions.add(Position.newBuilder().setX(nowX).setY(nowY).build()); // 先将起始点添加进去
+                boolean[] steped = new boolean[60];
+                canMoveToDFS(board, nowX, nowY, targetX, targetY, positions, moves, steped);
             } else {
                 // 当前是司令~排长，或炸弹，不可以拐弯（地雷和军旗已经在外面过滤掉了）
                 if (nowX != targetX && nowY != targetY) {
@@ -533,5 +526,91 @@ public class ListUDG {
                 // 相等的情况在外面已经做了过滤
             }
         }
+    }
+
+    // 用于标记上一步走的方向
+    final static private int LEFT = 0;
+    final static private int RIGHT = 1;
+    final static private int UP = 2;
+    final static private int BOTTOM = 3;
+    final static private int START = 4; // 初始状态，不属于任何方向
+
+    // positions在递归过程中存下路径中经过的所有位置点，等到确定两个位置可以连通的时候，再分析拐弯的是哪些位置点
+    static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY,
+                                     List<Position> positions, List<Move> moves, boolean[] steped) {
+        // 找到一条路径就可以返回了
+        if (x == targetX && y == targetY) {
+            // 先对positions进行处理，得到拐弯点的记录（当前是所有点的记录）
+            List<Position> positionsTurn = getPositionsTurn(positions);
+            JunQiMove move = new JunQiMove(positionsTurn);
+            moves.add(move);
+            return true;
+        }
+
+        // 当前递归位置点已访问过或已有一个棋子，则此条路径不通
+        if (steped[x * BoardInfo.LENGTH + y] || board[x][y] > 0) {
+            return false;
+        }
+
+        ENode head = mVexs[x * BoardInfo.LENGTH + y].edgeHead;
+        while (head != null) {
+            VNode node = mVexs[head.ivex];
+            int positionType = node.positionType;
+            int currentX = node.x; // 相邻坐标是手动添加进去的，所以一定是合法的不用再做边界判断
+            int currentY = node.y;
+
+            // 目标位置是铁路，非铁路过滤掉
+            if (positionType != PositionType.RAILWAY_POSITION) {
+                continue;
+            }
+
+            // 由于非铁路被过滤掉了，所以剩下的递归位置点一定在上下左右其中一个，
+            // 不会有斜着走的情况（去看棋盘布局就懂了）
+            steped[currentX * BoardInfo.LENGTH + currentY] = true; // 设置当前节点被访问标记
+            positions.add(Position.newBuilder().setX(currentX).setY(currentY).build());
+            boolean hasFound = canMoveToDFS(board, currentX, currentY, targetX, targetY,
+                                            positions, moves, steped);
+            if (hasFound) {
+                // 已找到并添加了路径到moves中，递归返回退出dfs
+                return true;
+            }
+            // 状态回溯
+            positions.remove(positions.size() - 1);
+            steped[currentX * BoardInfo.LENGTH + currentY] = false;
+
+            head = head.nextEdge;
+        }
+
+        return false;
+    }
+
+    static private List<Position> getPositionsTurn(List<Position> positions) {
+        List<Position> positionsTurn = new ArrayList<>();
+        positionsTurn.add(positions.get(0));
+
+        int i = 1;
+        for (; i < positions.size() - 1; i++) {
+            /*
+                路径方向只可能是下面两种情况，因为当前是工兵在铁路上走的路径，
+                只可能是横着或竖着走，不能斜着走，因此要么是x坐标发生了变化，
+                要么是y坐标发生了变化
+             */
+            // 路径方向由纵向拐横向
+            if (positions.get(i).getX() == positions.get(i - 1).getX()
+                    && positions.get(i).getX() != positions.get(i + 1).getX()) {
+                positionsTurn.add(positions.get(i));
+                continue;
+            }
+
+            // 路径方向由横向拐纵向
+            if (positions.get(i).getY() == positions.get(i - 1).getY()
+                    && positions.get(i).getY() != positions.get(i + 1).getX()) {
+                positionsTurn.add(positions.get(i));
+            }
+        }
+        // 最后一个节点，直接添加到拐弯路径序列里（这么写是为了优化速度少做判断）
+        positionsTurn.add(positions.get(i));
+
+        return positionsTurn;
     }
 }

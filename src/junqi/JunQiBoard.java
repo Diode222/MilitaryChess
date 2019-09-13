@@ -6,6 +6,8 @@ import global.PositionType;
 import mcts.Board;
 import mcts.CallLocation;
 import mcts.Move;
+import utils.ChessStrengthCompare;
+import utils.ListUDG;
 import utils.PathFinder;
 
 import java.util.ArrayList;
@@ -51,29 +53,40 @@ public class JunQiBoard implements Board {
     }
 
     @Override
-    public List<Move> getMoves(CallLocation location) {
-        List<Move> moves = new ArrayList<>();
+    public ArrayList<Move> getMoves(CallLocation location) {
+        ArrayList<Move> moves = new ArrayList<>();
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                int chessId = board[i][j];
-                if(chessId == 0 || currentPlayer == 0 && chessId >= 26 || currentPlayer == 1 && chessId <= 25) {
+                int nowChessId = board[i][j];
+                if(nowChessId == 0 || currentPlayer == 0 && nowChessId >= 26 || currentPlayer == 1 && nowChessId <= 25) {
                     continue;
                 }
 
-                int chessType = ChessType.getType(chessId);
-                int positionType = PositionType.getType(i, j);
+                int nowChessType = ChessType.getType(nowChessId);
+                int nowPositionType = PositionType.getType(i, j);
 
-                if (chessType == ChessType.MINE_CHESS || chessType == ChessType.FLAG_CHESS
-                        || positionType == PositionType.FLAG_POSITION) {
+                if (nowChessType == ChessType.MINE_CHESS || nowChessType == ChessType.FLAG_CHESS
+                        || nowPositionType == PositionType.FLAG_POSITION) {
                     // 地雷和军旗不能动，大本营位置的棋子不能动
                     continue;
-                } else if (chessType == ChessType.NORMAL_CHESS || chessType == ChessType.BOOM_CHESS) {
-                    // 司令~排长，炸弹不能拐弯
-                    PathFinder.getAllPathOfAChessNormalOrBoomChess(getCurrentPlayer(), board, i, j, chessId,
-                                                                moves, chessType, positionType);
-                } else {
-                    // 工兵可以拐弯
+                }
 
+                for (int u = 0; u < BoardInfo.LENGTH; u++) {
+                    for (int v = 0; v < BoardInfo.HEIGHT; v++) {
+                        int targetChessId = board[u][v];
+                        if (nowChessId == targetChessId) {
+                            continue;
+                        }
+
+                        // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）TODO（存疑）
+                        if (!ChessStrengthCompare.isStrongerOrEqualThan(nowChessId, targetChessId)
+                                && nowChessType != ChessType.BOOM_CHESS) {
+                            continue;
+                        }
+
+                        // 判断能够从(i, j)移动棋子到(u, v)，若能移动，将移动路径存入moves
+                        ListUDG.canMoveTo(board, currentPlayer, i, j, u, v, moves);
+                    }
                 }
             }
         }
