@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public class ChessPower {
 
-    static private HashMap<Integer, Integer> powerMap = new HashMap<Integer, Integer>() {{
+    final static private HashMap<Integer, Integer> powerMap = new HashMap<Integer, Integer>();
+    static {
         // 先手队伍
         powerMap.put(1, -1);
         powerMap.put(2, 35);
@@ -57,7 +58,7 @@ public class ChessPower {
         powerMap.put(48, 2);
         powerMap.put(49, 2);
         powerMap.put(50, 2);
-    }};
+    };
 
     static public int getPower(int chessId) {
         return powerMap.get(chessId);

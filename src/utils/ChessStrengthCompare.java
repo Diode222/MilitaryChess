@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public class ChessStrengthCompare {
 
-    final static private HashMap<Integer, Integer> strengthMap = new HashMap<Integer, Integer>() {{
+    final static private HashMap<Integer, Integer> strengthMap = new HashMap<Integer, Integer>();
+    static {
         // 上半区先手
         strengthMap.put(1, -1);
         strengthMap.put(2, 100);
@@ -57,7 +58,7 @@ public class ChessStrengthCompare {
         strengthMap.put(50, 0);
         strengthMap.put(37, 0);
         strengthMap.put(38, 0);
-    }};
+    };
 
     static public int getChessStrength(int chessId) {
         return strengthMap.get(chessId);

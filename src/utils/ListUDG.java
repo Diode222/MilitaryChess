@@ -1,37 +1,54 @@
 package utils;
 
 import global.BoardInfo;
+import global.PositionType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class ListUDG {
 
+    // 棋盘邻接表
+    static private ListUDG udg;
+
+    static public ListUDG getUdg() {
+        return udg;
+    }
+
     // 邻接表中链表的数据结构
-    private class ENode {
+    static private class ENode {
         int ivex; //
         ENode nextEdge;
     }
 
     // 邻接表中顶点的数据结构
-    private class VNode {
+    static private class VNode {
         int x;
         int y;
         int positionType; // 该顶点对应位置的类型（普通、行营、铁路、大本营）
-        ENode firstEdge;
+        ENode edgeHead; // 邻接链表头
     }
 
     // 顶点对应的数组
-    static public VNode[] mVexs = new VNode[60];
+    static private VNode[] mVexs = new VNode[60];
+
+    // 顶点数组各个点位置快速查找
+    static private HashMap<String, Integer> mVexsMap;
 
     static {
-        String[] vexs = new String[60];
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                vexs[i * BoardInfo.LENGTH + j] = i + "," + j;
+                int index = i * BoardInfo.LENGTH + j;
+                mVexs[index] = new VNode();
+                mVexs[index].x = i;
+                mVexs[index].y = j;
+                mVexs[index].positionType = PositionType.getType(i, j);
+                mVexs[index].edgeHead = null;
+                mVexsMap.put(i + "," + j, index);
             }
         }
+    }
 
+    static {
         String[][] edges = new String[][] {
                 {"0,0", "0,1"},
                 {"0,0", "1,0"},
@@ -360,10 +377,29 @@ public class ListUDG {
                 {"4,11", "4,10"}
         };
 
-        int vlen = vexs.length;
-        int elen = edges.length;
+        udg = new ListUDG(edges);
+    }
 
-        ListUDG pG = new ListUDG();
+    // 初始化棋盘连接图（是一个无向图）
+    private ListUDG(String[][] edges) {
 
+        // 顶点mVexs已经初始化过了
+
+        // 处理边edges
+        for (int i = 0; i < edges.length; i++) {
+            // 读取边的起始顶点和结束顶点
+            int indexStart = mVexsMap.get(edges[i][0]);
+            int indexEnd = mVexsMap.get(edges[i][1]);
+            // 处理链表（由于初始化时正反节点都有边的输入，所以只需处理当前正向节点的链表，不用管反向节点）
+            ENode node = new ENode();
+            node.ivex = indexEnd;
+            // 将node1链接到"indexStart所在链表的末尾"
+            if(mVexs[indexStart].edgeHead == null)
+                mVexs[indexStart].edgeHead = node;
+            else {
+                node.nextEdge = mVexs[indexStart].edgeHead;
+                mVexs[indexStart].edgeHead = node;
+            }
+        }
     }
 }

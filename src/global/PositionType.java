@@ -11,7 +11,8 @@ public class PositionType {
     final static public int CAMP_POSITION = 2; // 行营
     final static public int FLAG_POSITION = 3; // 大本营
 
-    final static private HashMap<String, Integer> typeMap = new HashMap<String, Integer>() {{
+    final static private HashMap<String, Integer> typeMap = new HashMap<>();
+    static {
         // 不能用自定义类型Position作key，可以先把坐标Position转换成字符串
         // 第一列
         typeMap.put("0,0", NORMAL_POSITION);
@@ -78,7 +79,7 @@ public class PositionType {
         typeMap.put("4,9", RAILWAY_POSITION);
         typeMap.put("4,10", RAILWAY_POSITION);
         typeMap.put("4,11", NORMAL_POSITION);
-    }};
+    };
 
     static public int getType(int x, int y) {
         String key = x + "," + y;

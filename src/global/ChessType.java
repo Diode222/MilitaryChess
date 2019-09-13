@@ -10,7 +10,8 @@ public class ChessType {
     final static public int FLAG_CHESS = 3; // 军旗
     final static public int BOOM_CHESS = 4; // 炸弹（炸弹和普通棋子NORMAL_CHESS用一样的走法）
 
-    final static private HashMap<Integer, Integer> typeMap = new HashMap<Integer, Integer>() {{
+    final static private HashMap<Integer, Integer> typeMap = new HashMap<Integer, Integer>();
+    static {
         // 先手队伍
         typeMap.put(1, FLAG_CHESS);
         typeMap.put(2, NORMAL_CHESS);
@@ -64,7 +65,7 @@ public class ChessType {
         typeMap.put(48, MINE_CHESS);
         typeMap.put(49, MINE_CHESS);
         typeMap.put(50, MINE_CHESS);
-    }};
+    };
 
     static public int getType(int chessId) {
         return typeMap.get(chessId);
