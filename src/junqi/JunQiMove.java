@@ -10,7 +10,7 @@ public class JunQiMove implements mcts.Move {
 
     List<Position> points;
 
-    JunQiMove(List<Position> points) {
+    public JunQiMove(List<Position> points) {
         this.points = points;
     }
 

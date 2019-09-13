@@ -1,6 +1,7 @@
 package mcts;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface Board {
 
@@ -23,7 +24,7 @@ public interface Board {
 	 * @param location
 	 * @return
 	 */
-	public ArrayList<Move> getMoves(CallLocation location);
+	public List<Move> getMoves(CallLocation location);
 
 	/**
 	 * Apply the move m to the current state of the board.

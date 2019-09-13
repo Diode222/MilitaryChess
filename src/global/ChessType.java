@@ -4,11 +4,11 @@ import java.util.HashMap;
 
 public class ChessType {
 
-    final static private int NORMAL_CHESS = 0; // 司令~炸弹~排长
-    final static private int SOLDIER_CHESS = 1; // 工兵
-    final static private int MINE_CHESS = 2; // 地雷
-    final static private int FLAG_CHESS = 3; // 军旗
-    final static private int BOOM_CHESS = 4; // 炸弹（炸弹和普通棋子NORMAL_CHESS用一样的走法）
+    final static public int NORMAL_CHESS = 0; // 司令~炸弹~排长
+    final static public int SOLDIER_CHESS = 1; // 工兵
+    final static public int MINE_CHESS = 2; // 地雷
+    final static public int FLAG_CHESS = 3; // 军旗
+    final static public int BOOM_CHESS = 4; // 炸弹（炸弹和普通棋子NORMAL_CHESS用一样的走法）
 
     final static private HashMap<Integer, Integer> typeMap = new HashMap<Integer, Integer>() {{
         // 先手队伍
@@ -66,7 +66,7 @@ public class ChessType {
         typeMap.put(50, MINE_CHESS);
     }};
 
-    static public int getChessType(int chessId) {
+    static public int getType(int chessId) {
         return typeMap.get(chessId);
     }
 }

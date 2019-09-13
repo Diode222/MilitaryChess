@@ -6,10 +6,10 @@ import java.util.HashMap;
 
 public class PositionType {
 
-    final static private int NORMAL_POSITION = 0; // 只能走一步的非行营位置
-    final static private int RAILWAY_POSITION = 1; // 铁道
-    final static private int CAMP_POSITION = 2; // 行营
-    final static private int FLAG_POSITION = 3; // 大本营
+    final static public int NORMAL_POSITION = 0; // 只能走一步的非行营位置
+    final static public int RAILWAY_POSITION = 1; // 铁道
+    final static public int CAMP_POSITION = 2; // 行营
+    final static public int FLAG_POSITION = 3; // 大本营
 
     final static private HashMap<String, Integer> typeMap = new HashMap<String, Integer>() {{
         // 不能用自定义类型Position作key，可以先把坐标Position转换成字符串
@@ -80,8 +80,8 @@ public class PositionType {
         typeMap.put("4,11", NORMAL_POSITION);
     }};
 
-    static public int getType(Position position) {
-        String key = position.getX() + "," + position.getY();
+    static public int getType(int x, int y) {
+        String key = x + "," + y;
         return typeMap.get(key);
     }
 }
