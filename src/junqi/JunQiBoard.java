@@ -27,7 +27,12 @@ public class JunQiBoard implements Board {
 
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
+        currentPlayer = 1;
         turnsHasNoEatOtherSide = 0;
+    }
+
+    public void setBoard(int[][] board) {
+        this.board = board;
     }
 
     @Override

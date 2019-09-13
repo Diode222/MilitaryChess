@@ -43,7 +43,7 @@ public class ListUDG {
     static {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                int index = i * BoardInfo.LENGTH + j;
+                int index = j * BoardInfo.LENGTH + i;
                 mVexs[index] = new VNode();
                 mVexs[index].x = i;
                 mVexs[index].y = j;
@@ -425,9 +425,14 @@ public class ListUDG {
 
         // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）（在外面已经过滤掉了这种情况）
 
-        // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达，
+        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
+        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
+            return;
+        }
+
+        // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
-            int index = nowX * BoardInfo.LENGTH + nowY;
+            int index = nowY * BoardInfo.LENGTH + nowX;
             ENode head = mVexs[index].edgeHead;
             while (head != null) {
                 if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
@@ -445,7 +450,7 @@ public class ListUDG {
 
         // 当前在普通位置或行营位置，则只能移动到直接相邻处（判断语句里面逻辑和上面一样）
         if (nowPositionType == PositionType.NORMAL_POSITION || nowPositionType == PositionType.CAMP_POSITION) {
-            int index = nowX * BoardInfo.LENGTH + nowY;
+            int index = nowY * BoardInfo.LENGTH + nowX;
             ENode head = mVexs[index].edgeHead;
             while (head != null) {
                 if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
@@ -528,13 +533,6 @@ public class ListUDG {
         }
     }
 
-    // 用于标记上一步走的方向
-    final static private int LEFT = 0;
-    final static private int RIGHT = 1;
-    final static private int UP = 2;
-    final static private int BOTTOM = 3;
-    final static private int START = 4; // 初始状态，不属于任何方向
-
     // positions在递归过程中存下路径中经过的所有位置点，等到确定两个位置可以连通的时候，再分析拐弯的是哪些位置点
     static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY,
                                      List<Position> positions, List<Move> moves, boolean[] steped) {
@@ -548,11 +546,11 @@ public class ListUDG {
         }
 
         // 当前递归位置点已访问过或已有一个棋子，则此条路径不通
-        if (steped[x * BoardInfo.LENGTH + y] || board[x][y] > 0) {
+        if (steped[y * BoardInfo.LENGTH + x] || board[x][y] > 0) {
             return false;
         }
 
-        ENode head = mVexs[x * BoardInfo.LENGTH + y].edgeHead;
+        ENode head = mVexs[y * BoardInfo.LENGTH + x].edgeHead;
         while (head != null) {
             VNode node = mVexs[head.ivex];
             int positionType = node.positionType;
@@ -566,7 +564,7 @@ public class ListUDG {
 
             // 由于非铁路被过滤掉了，所以剩下的递归位置点一定在上下左右其中一个，
             // 不会有斜着走的情况（去看棋盘布局就懂了）
-            steped[currentX * BoardInfo.LENGTH + currentY] = true; // 设置当前节点被访问标记
+            steped[currentY * BoardInfo.LENGTH + currentX] = true; // 设置当前节点被访问标记
             positions.add(Position.newBuilder().setX(currentX).setY(currentY).build());
             boolean hasFound = canMoveToDFS(board, currentX, currentY, targetX, targetY,
                                             positions, moves, steped);
@@ -576,7 +574,7 @@ public class ListUDG {
             }
             // 状态回溯
             positions.remove(positions.size() - 1);
-            steped[currentX * BoardInfo.LENGTH + currentY] = false;
+            steped[currentY * BoardInfo.LENGTH + currentX] = false;
 
             head = head.nextEdge;
         }

@@ -9,9 +9,12 @@ public class ChessType {
     final static public int MINE_CHESS = 2; // 地雷
     final static public int FLAG_CHESS = 3; // 军旗
     final static public int BOOM_CHESS = 4; // 炸弹（炸弹和普通棋子NORMAL_CHESS用一样的走法）
+    final static public int NO_CHESS = 5; // 表示棋盘当前位置没有棋子
 
     final static private HashMap<Integer, Integer> typeMap = new HashMap<Integer, Integer>();
     static {
+        // 棋盘chessId=0表示没有棋子，则对应NO_CHESS
+        typeMap.put(0, NO_CHESS);
         // 先手队伍
         typeMap.put(1, FLAG_CHESS);
         typeMap.put(2, NORMAL_CHESS);
