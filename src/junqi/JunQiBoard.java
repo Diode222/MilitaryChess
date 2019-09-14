@@ -307,9 +307,10 @@ public class JunQiBoard implements Board {
     public void bPrint() {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                System.out.println(board[i][j] + " ");
+                System.out.print(board[i][j] + " ");
             }
             System.out.println("");
         }
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>");
     }
 }

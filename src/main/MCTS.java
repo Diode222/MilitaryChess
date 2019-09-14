@@ -83,6 +83,11 @@ public class MCTS {
 		if (this.trackTime) {
 			System.out.println("Making choice for player: " + rootNode.player);
 			System.out.println("Thinking time per move in milliseconds: " + (endTime - startTime) / 1000000);
+
+			// TODO 测试之后remove
+			System.out.println(">>>>>>>current player: " + (startingBoard.getCurrentPlayer() == 0 ? 1 : 0) + ">>>>>>>");
+			startingBoard.bPrint();
+			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		}
 
 		return finalMoveSelection(rootNode);
@@ -281,6 +286,18 @@ public class MCTS {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
+					// TODO 看下有么有什么办法处理空的问题
+					if (moves.size() == 0) {
+						int currentPlayer = brd.getCurrentPlayer();
+						if (currentPlayer == 0) {
+							System.out.println(">>>>>>>0,1>>>>>>>>>>>>>0,1>>>>>>>>>>>0.1");
+							return new double[]{0.0d, 1.0d};
+						} else {
+							System.out.println(">>>>>>>1,0>>>>>>>>>>>>>1,0>>>>>>>>>>>1.0");
+							return new double[]{1.0d, 0.0d};
+						}
+					}
+
 					mv = moves.get(random.nextInt(moves.size()));
 				} else {
 
