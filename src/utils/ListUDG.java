@@ -553,17 +553,17 @@ public class ListUDG {
     // positions在递归过程中存下路径中经过的所有位置点，等到确定两个位置可以连通的时候，再分析拐弯的是哪些位置点
     static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY, List<Position> positions,
                                         List<Move> moves, boolean[] steped, int originalChessId) {
-        // 当前递归位置点已访问过或已有一个棋子且大于工兵（不是工兵，军旗，地雷，炸弹，即只能是NORMAL_CHESS），
-        // 则此条路径不通（如果当前递归位置点是起始棋子，则表示是进入，可以判断跳过）
+        // 当前递归位置点已访问过，或已有一个棋子且当前并没有到终点，则此条路径不通，
+        // 如果当前递归位置点是起始棋子，则表示是进入，可以判断跳过
         if (steped[y * BoardInfo.LENGTH + x]
-                || board[x][y] > 0 && ChessType.getType(board[x][y]) == ChessType.NORMAL_CHESS) {
-            // 所有的NORMAL_CHESS都比工兵大
-            positions.add(Position.newBuilder().setX(x).setY(y).build()); // 仍然要添加进去不然上一层会remove错
+            || board[x][y] > 0 && (x != targetX || y != targetY) && board[x][y] != originalChessId) {
+            positions.add(Position.newBuilder().setX(x).setY(y).build()); // 仍然要添加进去不然上一个调用栈会remove错
             return false;
         }
 
         // 找到一条路径就可以返回了
         if (x == targetX && y == targetY) {
+            // 不需要判断大小，外面已经过滤掉了小于的情况
             positions.add(Position.newBuilder().setX(x).setY(y).build());
             // 先对positions进行处理，得到拐弯点的记录（positions是所有点的记录）
             List<Position> positionsTurn = getPositionsTurn(positions);
