@@ -469,6 +469,8 @@ public class ListUDG {
         // 大本营位置已经在外面进行了过滤
 
         // 只剩下当前位置在铁路，且目标位置也在铁路的情况（判断语句用来方便看清逻辑）
+        // 都在铁路上且都在同一直线上，也需要判断拐弯与否，如(1, 5)和(1, 6)需要拐弯，
+        // (1, 5)和(1, 1)需要拐弯
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType == PositionType.RAILWAY_POSITION) {
             if (nowChessType == ChessType.SOLDIER_CHESS) {
                 // 当前是工兵，可以拐弯（最复杂的路径判断，不需要找到最短路径，只需找出一条可行路径即可，因此使用dfs）
@@ -491,6 +493,11 @@ public class ListUDG {
                         end = nowX;
                     }
                     for (int i = start + 1; i < end; i++) {
+                        // 当前在同一条直线上，但是仍需要拐弯，如(0, 4)到(4, 4)，不能移动
+                        if (PositionType.getType(i, nowY) != PositionType.RAILWAY_POSITION) {
+                            return;
+                        }
+
                         // 路径上存在其它棋子，不能移动
                         if (board[i][nowY] != 0) {
                             return;
@@ -513,7 +520,18 @@ public class ListUDG {
                         start = targetY;
                         end = nowY;
                     }
+
+                    // 竖着走有两个特殊情况(1, 5)到(1, 6)和(3, 5)到(3, 6)，不能移动
+                    if (start == 5 && end == 6 && (nowX == 1 || nowX == 3)) {
+                        return;
+                    }
+
                     for (int i = start + 1; i < end; i++) {
+                        // 当前在同一条直线上，但是仍需要拐弯，如(1, 5)到(1, 1)，不能移动
+                        if (PositionType.getType(nowX, i) != PositionType.RAILWAY_POSITION) {
+                            return;
+                        }
+
                         // 路径上存在其它棋子，不能移动
                         if (board[nowX][i] != 0) {
                             return;
