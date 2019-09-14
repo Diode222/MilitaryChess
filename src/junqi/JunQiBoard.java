@@ -275,6 +275,13 @@ public class JunQiBoard implements Board {
                 }
             }
         }
+
+        // 若当前选手没有可以移动的选择，即moves为空，则判当前选手输
+        if (moves.size() == 0) {
+            gameOver = true;
+            winner = (currentPlayer == 0) ? 1 : 0;
+        }
+
         return moves;
     }
 

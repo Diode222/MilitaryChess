@@ -291,16 +291,11 @@ public class MCTS {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
-					// TODO 看下有么有什么办法处理空的问题
-					if (moves.size() == 0) {
-						int currentPlayer = brd.getCurrentPlayer();
-						if (currentPlayer == 0) {
-							System.out.println(">>>>>>>0,1>>>>>>>>>>>>>0,1>>>>>>>>>>>0.1");
-							return new double[]{0.0d, 1.0d};
-						} else {
-							System.out.println(">>>>>>>1,0>>>>>>>>>>>>>1,0>>>>>>>>>>>1.0");
-							return new double[]{1.0d, 0.0d};
-						}
+
+					// 因为我的实现可能出现moves为空的情况，在空moves的时候我会将
+					// 胜负信息处理好，这里判断一下就行了，避免空moves的情况
+					if (brd.gameOver()) {
+						return brd.getScore();
 					}
 
 					mv = moves.get(random.nextInt(moves.size()));
