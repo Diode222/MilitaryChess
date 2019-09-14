@@ -23,9 +23,6 @@ public class JunQiBoard implements Board {
     boolean draw;
     boolean gameOver;
 
-    // TODO remove
-
-
     @Override
     public int getTurnsHasNEaten() {
         return turnsCountChessHasNoEat;
@@ -44,10 +41,11 @@ public class JunQiBoard implements Board {
 
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
-//        currentPlayer = 1;
+      
         turnsCountChessHasNoEat = 0;
         firstHandFlagBeTaken = false;
         firstHandFlagBeTaken = false;
+      
         /*
          TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
           则有22个，需要根据网络得到的棋盘返回值判断，但我自己训练棋盘就只考虑21个）
