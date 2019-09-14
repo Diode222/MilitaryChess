@@ -44,7 +44,7 @@ public class JunQiBoard implements Board {
       
         turnsCountChessHasNoEat = 0;
         firstHandFlagBeTaken = false;
-        firstHandFlagBeTaken = false;
+        backtHandFlagBeTaken = false;
       
         /*
          TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
