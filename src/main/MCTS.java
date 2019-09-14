@@ -49,11 +49,16 @@ public class MCTS {
 		long startTime = System.nanoTime();
 
 		if (!pmode) {
-			for (int i = 0; i < runs; i++) {
+//			for (int i = 0; i < runs; i++) {
+//				select(startingBoard.duplicate(), rootNode);
+//			}
+
+			// TODO 按照时间限制进行遍历
+			while ((System.nanoTime() - startTime) / 1000000 <= 2500) {
 				select(startingBoard.duplicate(), rootNode);
 			}
 		} else {
-
+			// TODO 修复多线程功能
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, runs)));
 
