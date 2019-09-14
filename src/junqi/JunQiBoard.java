@@ -23,6 +23,14 @@ public class JunQiBoard implements Board {
     boolean draw;
     boolean gameOver;
 
+    // TODO remove
+
+
+    @Override
+    public int getTurnsHasNEaten() {
+        return turnsCountChessHasNoEat;
+    }
+
     // 用于判断平局的信息，表示已有多少轮没有棋子阵亡，初始为0
     int turnsCountChessHasNoEat;
 

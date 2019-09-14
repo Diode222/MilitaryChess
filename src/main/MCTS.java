@@ -87,7 +87,7 @@ public class MCTS {
 			// TODO 测试之后remove
 			System.out.println(">>>>>>>current player: " + (startingBoard.getCurrentPlayer() == 0 ? 1 : 0) + ">>>>>>>");
 			startingBoard.bPrint();
-			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+			System.out.println(">>>>>>>>>>>>turnsHasNoBeEaten: " + startingBoard.getTurnsHasNEaten() + ">>>>>>>>>>>>>>>>>>>>>");
 		}
 
 		return finalMoveSelection(rootNode);
