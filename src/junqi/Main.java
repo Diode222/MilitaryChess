@@ -44,7 +44,7 @@ public class Main {
 
         for (int i = 0; i < 100; i++) {
             JunQiBoard junqi = new JunQiBoard();
-            junqi.initBoard(BoardLayout.NORMAL_LAYOUT_FIRST);
+            junqi.initBoard(new BoardLayout().getNormalLayoutFirst());
             while (!junqi.gameOver()) {
                 move = mcts.runMCTS_UCT(junqi, 1000, false);
                 junqi.makeMove(move);
