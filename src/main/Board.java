@@ -1,4 +1,4 @@
-package mcts;
+package main;
 
 import java.util.ArrayList;
 
@@ -46,6 +46,9 @@ public interface Board {
 	 * @return
 	 */
 	public int getCurrentPlayer();
+
+	// TODO remove
+	public int getTurnsHasNEaten();
 	
 	/**
 	 * Returns the number of players.

@@ -1,7 +1,7 @@
-package mcts;
+package main;
 
-import mcts.support.HeuristicFunction;
-import mcts.support.PlayoutSelection;
+import main.support.HeuristicFunction;
+import main.support.PlayoutSelection;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -49,11 +49,16 @@ public class MCTS {
 		long startTime = System.nanoTime();
 
 		if (!pmode) {
-			for (int i = 0; i < runs; i++) {
+//			for (int i = 0; i < runs; i++) {
+//				select(startingBoard.duplicate(), rootNode);
+//			}
+
+			// TODO 按照时间限制进行遍历
+			while ((System.nanoTime() - startTime) / 1000000 <= 2500) {
 				select(startingBoard.duplicate(), rootNode);
 			}
 		} else {
-
+			// TODO 修复多线程功能
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, runs)));
 
@@ -83,6 +88,11 @@ public class MCTS {
 		if (this.trackTime) {
 			System.out.println("Making choice for player: " + rootNode.player);
 			System.out.println("Thinking time per move in milliseconds: " + (endTime - startTime) / 1000000);
+
+			// TODO 测试之后remove
+			System.out.println(">>>>>>>current player: " + (startingBoard.getCurrentPlayer() == 0 ? 1 : 0) + ">>>>>>>");
+			startingBoard.bPrint();
+			System.out.println(">>>>>>>>>>>>turnsHasNoBeEaten: " + startingBoard.getTurnsHasNEaten() + ">>>>>>>>>>>>>>>>>>>>>");
 		}
 
 		return finalMoveSelection(rootNode);
@@ -98,9 +108,9 @@ public class MCTS {
 	 * until you find an unexpanded child node. Expand it. Run a random playout.
 	 * Backpropagate results of the playout.
 	 * 
-	 * @param @node
+	 * @param node
 	 *            Node from which to start selection
-	 * @param @brd
+	 * @param brd
 	 *            Board state to work from.
 	 */
 	private void select(Board currentBoard, Node currentNode) {
@@ -281,6 +291,13 @@ public class MCTS {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
+
+					// 因为我的实现可能出现moves为空的情况，在空moves的时候我会将
+					// 胜负信息处理好，这里判断一下就行了，避免空moves的情况
+					if (brd.gameOver()) {
+						return brd.getScore();
+					}
+
 					mv = moves.get(random.nextInt(moves.size()));
 				} else {
 

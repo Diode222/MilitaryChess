@@ -1,7 +1,5 @@
 package global;
 
-import chessPostionInfo.Position;
-
 import java.util.HashMap;
 
 public class PositionType {

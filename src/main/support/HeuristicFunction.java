@@ -1,11 +1,11 @@
-package mcts.support;
+package main.support;
 
-import mcts.Board;
+import main.Board;
 
 /**
  * Create a class implementing this interface and instantiate
  * it. Pass the instance to the MCTS instance using the
- * {@link @setHeuristicFunction(HeuristicFunction h) setHeuristicFunction} method.
+ * {@link #setHeuristicFunction(HeuristicFunction h) setHeuristicFunction} method.
 
  * @author KGS
  *

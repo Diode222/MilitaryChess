@@ -1,4 +1,4 @@
-package mcts;
+package main;
 
 public enum CallLocation {
 	treePolicy,

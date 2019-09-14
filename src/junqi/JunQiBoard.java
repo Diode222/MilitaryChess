@@ -4,9 +4,9 @@ import chessPostionInfo.Position;
 import global.BoardInfo;
 import global.ChessType;
 import global.PositionType;
-import mcts.Board;
-import mcts.CallLocation;
-import mcts.Move;
+import main.Board;
+import main.CallLocation;
+import main.Move;
 import utils.ChessStrengthCompare;
 import utils.ListUDG;
 
@@ -23,12 +23,17 @@ public class JunQiBoard implements Board {
     boolean draw;
     boolean gameOver;
 
+    @Override
+    public int getTurnsHasNEaten() {
+        return turnsCountChessHasNoEat;
+    }
+
     // 用于判断平局的信息，表示已有多少轮没有棋子阵亡，初始为0
-    int turnsCountHasNoEatOtherSide;
+    int turnsCountChessHasNoEat;
 
     // 双方军旗是否已经被夺掉，用来判断胜负
-    boolean firstHandFlagBeTaken = false;
-    boolean backtHandFlagBeTaken = false;
+    boolean firstHandFlagBeTaken;
+    boolean backtHandFlagBeTaken;
 
     // 双方棋子剩余可移动数目，用于判断局势和胜负
     int firstHandRemainMovableChessNum;
@@ -36,8 +41,11 @@ public class JunQiBoard implements Board {
 
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
-//        currentPlayer = 1;
-        turnsCountHasNoEatOtherSide = 0;
+      
+        turnsCountChessHasNoEat = 0;
+        firstHandFlagBeTaken = false;
+        firstHandFlagBeTaken = false;
+      
         /*
          TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
           则有22个，需要根据网络得到的棋盘返回值判断，但我自己训练棋盘就只考虑21个）
@@ -46,7 +54,7 @@ public class JunQiBoard implements Board {
         backHandRemainMovableChessNum = 21;
     }
 
-    public void setBoard(int[][] board) {
+    public void initBoard(int[][] board) {
         this.board = board;
     }
 
@@ -57,7 +65,7 @@ public class JunQiBoard implements Board {
         newBoard.currentPlayer = currentPlayer;
         newBoard.draw = draw;
         newBoard.gameOver = gameOver;
-        newBoard.turnsCountHasNoEatOtherSide = turnsCountHasNoEatOtherSide;
+        newBoard.turnsCountChessHasNoEat = turnsCountChessHasNoEat;
         newBoard.firstHandFlagBeTaken = firstHandFlagBeTaken;
         newBoard.backtHandFlagBeTaken = backtHandFlagBeTaken;
         newBoard.firstHandRemainMovableChessNum = firstHandRemainMovableChessNum;
@@ -174,9 +182,9 @@ public class JunQiBoard implements Board {
             如果有棋子被吃掉，则turnsCountHasNoEatOtherSide置为0重新计算
          */
         if (endChessId != 0) {
-            turnsCountHasNoEatOtherSide = 0;
+            turnsCountChessHasNoEat = 0;
         } else {
-            turnsCountHasNoEatOtherSide++;
+            turnsCountChessHasNoEat++;
         }
 
         /*
@@ -190,7 +198,7 @@ public class JunQiBoard implements Board {
         }
 
         // 连续20步双方无棋子阵亡，则判平局
-        if (turnsCountHasNoEatOtherSide >= 20) {
+        if (turnsCountChessHasNoEat >= 20) {
             gameOver = true;
             draw = true;
         }
@@ -265,6 +273,13 @@ public class JunQiBoard implements Board {
                 }
             }
         }
+
+        // 若当前选手没有可以移动的选择，即moves为空，则判当前选手输
+        if (moves.size() == 0) {
+            gameOver = true;
+            winner = (currentPlayer == 0) ? 1 : 0;
+        }
+
         return moves;
     }
 
@@ -305,9 +320,10 @@ public class JunQiBoard implements Board {
     public void bPrint() {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                System.out.println(board[i][j] + " ");
+                System.out.print(board[i][j] + " ");
             }
             System.out.println("");
         }
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>");
     }
 }
