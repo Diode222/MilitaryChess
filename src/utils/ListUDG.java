@@ -43,7 +43,7 @@ public class ListUDG {
     static {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
-                int index = i * BoardInfo.LENGTH + j;
+                int index = j * BoardInfo.LENGTH + i;
                 mVexs[index] = new VNode();
                 mVexs[index].x = i;
                 mVexs[index].y = j;
@@ -425,9 +425,14 @@ public class ListUDG {
 
         // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）（在外面已经过滤掉了这种情况）
 
-        // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达，
+        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
+        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
+            return;
+        }
+
+        // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
-            int index = nowX * BoardInfo.LENGTH + nowY;
+            int index = nowY * BoardInfo.LENGTH + nowX;
             ENode head = mVexs[index].edgeHead;
             while (head != null) {
                 if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
@@ -445,7 +450,7 @@ public class ListUDG {
 
         // 当前在普通位置或行营位置，则只能移动到直接相邻处（判断语句里面逻辑和上面一样）
         if (nowPositionType == PositionType.NORMAL_POSITION || nowPositionType == PositionType.CAMP_POSITION) {
-            int index = nowX * BoardInfo.LENGTH + nowY;
+            int index = nowY * BoardInfo.LENGTH + nowX;
             ENode head = mVexs[index].edgeHead;
             while (head != null) {
                 if (targetX == mVexs[head.ivex].x && targetY == mVexs[head.ivex].y) {
@@ -468,9 +473,8 @@ public class ListUDG {
             if (nowChessType == ChessType.SOLDIER_CHESS) {
                 // 当前是工兵，可以拐弯（最复杂的路径判断，不需要找到最短路径，只需找出一条可行路径即可，因此使用dfs）
                 List<Position> positions = new ArrayList<>();
-                positions.add(Position.newBuilder().setX(nowX).setY(nowY).build()); // 先将起始点添加进去
-                boolean[] steped = new boolean[60];
-                canMoveToDFS(board, nowX, nowY, targetX, targetY, positions, moves, steped);
+                boolean[] steped = new boolean[BoardInfo.LENGTH * BoardInfo.HEIGHT];
+                canMoveToDFS(board, nowX, nowY, targetX, targetY, positions, moves, steped, nowChessId);
             } else {
                 // 当前是司令~排长，或炸弹，不可以拐弯（地雷和军旗已经在外面过滤掉了）
                 if (nowX != targetX && nowY != targetY) {
@@ -528,31 +532,33 @@ public class ListUDG {
         }
     }
 
-    // 用于标记上一步走的方向
-    final static private int LEFT = 0;
-    final static private int RIGHT = 1;
-    final static private int UP = 2;
-    final static private int BOTTOM = 3;
-    final static private int START = 4; // 初始状态，不属于任何方向
-
     // positions在递归过程中存下路径中经过的所有位置点，等到确定两个位置可以连通的时候，再分析拐弯的是哪些位置点
-    static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY,
-                                     List<Position> positions, List<Move> moves, boolean[] steped) {
-        // 找到一条路径就可以返回了
-        if (x == targetX && y == targetY) {
-            // 先对positions进行处理，得到拐弯点的记录（当前是所有点的记录）
-            List<Position> positionsTurn = getPositionsTurn(positions);
-            JunQiMove move = new JunQiMove(positionsTurn);
-            moves.add(move);
-            return true;
-        }
-
-        // 当前递归位置点已访问过或已有一个棋子，则此条路径不通
-        if (steped[x * BoardInfo.LENGTH + y] || board[x][y] > 0) {
+    static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY, List<Position> positions,
+                                        List<Move> moves, boolean[] steped, int originalChessId) {
+        // 当前递归位置点已访问过或已有一个棋子且大于工兵（不是工兵，军旗，地雷，炸弹，即只能是NORMAL_CHESS），
+        // 则此条路径不通（如果当前递归位置点是起始棋子，则表示是进入，可以判断跳过）
+        if (steped[y * BoardInfo.LENGTH + x]
+                || board[x][y] > 0 && ChessType.getType(board[x][y]) == ChessType.NORMAL_CHESS) {
+            // 所有的NORMAL_CHESS都比工兵大
+            positions.add(Position.newBuilder().setX(x).setY(y).build()); // 仍然要添加进去不然上一层会remove错
             return false;
         }
 
-        ENode head = mVexs[x * BoardInfo.LENGTH + y].edgeHead;
+        // 找到一条路径就可以返回了
+        if (x == targetX && y == targetY) {
+            positions.add(Position.newBuilder().setX(x).setY(y).build());
+            // 先对positions进行处理，得到拐弯点的记录（positions是所有点的记录）
+            List<Position> positionsTurn = getPositionsTurn(positions);
+            JunQiMove move = new JunQiMove(positionsTurn);
+            moves.add(move);
+            System.out.println("bingo found");
+            return true;
+        }
+
+        steped[y * BoardInfo.LENGTH + x] = true; // 设置当前节点被访问标记
+        positions.add(Position.newBuilder().setX(x).setY(y).build());
+
+        ENode head = mVexs[y * BoardInfo.LENGTH + x].edgeHead;
         while (head != null) {
             VNode node = mVexs[head.ivex];
             int positionType = node.positionType;
@@ -561,22 +567,20 @@ public class ListUDG {
 
             // 目标位置是铁路，非铁路过滤掉
             if (positionType != PositionType.RAILWAY_POSITION) {
+                head = head.nextEdge;
                 continue;
             }
 
             // 由于非铁路被过滤掉了，所以剩下的递归位置点一定在上下左右其中一个，
             // 不会有斜着走的情况（去看棋盘布局就懂了）
-            steped[currentX * BoardInfo.LENGTH + currentY] = true; // 设置当前节点被访问标记
-            positions.add(Position.newBuilder().setX(currentX).setY(currentY).build());
-            boolean hasFound = canMoveToDFS(board, currentX, currentY, targetX, targetY,
-                                            positions, moves, steped);
+            boolean hasFound = canMoveToDFS(board, currentX, currentY, targetX, targetY, positions, moves, steped, originalChessId);
             if (hasFound) {
                 // 已找到并添加了路径到moves中，递归返回退出dfs
                 return true;
             }
             // 状态回溯
             positions.remove(positions.size() - 1);
-            steped[currentX * BoardInfo.LENGTH + currentY] = false;
+//            steped[currentY * BoardInfo.LENGTH + currentX] = false;
 
             head = head.nextEdge;
         }
@@ -588,28 +592,16 @@ public class ListUDG {
         List<Position> positionsTurn = new ArrayList<>();
         positionsTurn.add(positions.get(0));
 
-        int i = 1;
-        for (; i < positions.size() - 1; i++) {
-            /*
-                路径方向只可能是下面两种情况，因为当前是工兵在铁路上走的路径，
-                只可能是横着或竖着走，不能斜着走，因此要么是x坐标发生了变化，
-                要么是y坐标发生了变化
-             */
-            // 路径方向由纵向拐横向
-            if (positions.get(i).getX() == positions.get(i - 1).getX()
-                    && positions.get(i).getX() != positions.get(i + 1).getX()) {
-                positionsTurn.add(positions.get(i));
-                continue;
-            }
-
-            // 路径方向由横向拐纵向
-            if (positions.get(i).getY() == positions.get(i - 1).getY()
-                    && positions.get(i).getY() != positions.get(i + 1).getX()) {
+        for (int i = 1; i < positions.size() - 1; i++) {
+            // 拐点位置前后两个节点的x，y坐标均不相同，因为工兵铁路拐点必定是上下左右四个方向，可以看棋盘理解
+            if (positions.get(i - 1).getX() != positions.get(i + 1).getX()
+                && positions.get(i - 1).getY() != positions.get(i + 1).getY()) {
+                System.out.println("here" + positions.get(i).getX() + " " + positions.get(i).getY());
                 positionsTurn.add(positions.get(i));
             }
         }
         // 最后一个节点，直接添加到拐弯路径序列里（这么写是为了优化速度少做判断）
-        positionsTurn.add(positions.get(i));
+        positionsTurn.add(positions.get(positions.size() - 1));
 
         return positionsTurn;
     }

@@ -4,8 +4,10 @@ import java.util.HashMap;
 
 public class ChessStrengthCompare {
 
-    final static private HashMap<Integer, Integer> strengthMap = new HashMap<>();
+    final static public HashMap<Integer, Integer> strengthMap = new HashMap<Integer, Integer>();
     static {
+        // 没有棋子时棋子战斗力设为最小
+        strengthMap.put(0, -5);
         // 上半区先手
         strengthMap.put(1, -1);
         strengthMap.put(2, 100);
