@@ -63,7 +63,9 @@ public class JunQiBoard implements Board {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
                 int nowChessId = board[i][j];
-                if(nowChessId == 0 || currentPlayer == 0 && nowChessId >= 26 || currentPlayer == 1 && nowChessId <= 25) {
+                // 当前位置没有棋子不能移动，当前位置棋子是对方的，不能移动（0代表先手方，1代表后手方）
+                if(nowChessId == 0
+                        || currentPlayer == 0 && nowChessId >= 26 || currentPlayer == 1 && nowChessId <= 25) {
                     continue;
                 }
 
@@ -79,7 +81,9 @@ public class JunQiBoard implements Board {
                 for (int u = 0; u < BoardInfo.LENGTH; u++) {
                     for (int v = 0; v < BoardInfo.HEIGHT; v++) {
                         int targetChessId = board[u][v];
-                        if (nowChessId == targetChessId) {
+                        // 目标位置棋子是本方的，不能移动，也包含了不能从自己移动到自己的情况
+                        if (currentPlayer == 0 && targetChessId <= 25 && targetChessId != 0
+                                || currentPlayer == 1 && targetChessId >= 26) {
                             continue;
                         }
 
