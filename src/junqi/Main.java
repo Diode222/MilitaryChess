@@ -45,7 +45,7 @@ public class Main {
 //        }
 
         MCTS mcts = new MCTS();
-        mcts.setExplorationConstant(0.2);
+        mcts.setExplorationConstant(1.4d); // TODO 可调节参数，越大代表越倾向于找访问次数较少的节点，会降低搜索深度提高宽度
         mcts.setTimeDisplay(true);
         Move move;
         mcts.setOptimisticBias(0.0d);

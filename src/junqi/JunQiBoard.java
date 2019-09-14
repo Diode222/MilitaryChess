@@ -248,7 +248,7 @@ public class JunQiBoard implements Board {
                 for (int u = 0; u < BoardInfo.LENGTH; u++) {
                     for (int v = 0; v < BoardInfo.HEIGHT; v++) {
                         int targetChessId = board[u][v];
-                        // 目标位置棋子是本方的，不能移动，也包含了不能从自己移动到自己的情况
+                        // 目标棋子是本方的，不能移动，也包含了不能从自己移动到自己的情况
                         if (currentPlayer == 0 && targetChessId <= 25 && targetChessId != 0
                                 || currentPlayer == 1 && targetChessId >= 26) {
                             continue;
@@ -264,6 +264,25 @@ public class JunQiBoard implements Board {
                         int targetChessType = ChessType.getType(targetChessId);
                         if (targetChessType == ChessType.MINE_CHESS
                                 && !(nowChessType == ChessType.SOLDIER_CHESS || nowChessType == ChessType.BOOM_CHESS)) {
+                            continue;
+                        }
+
+                        // 本方只剩一个可移动棋子时，不要去碰对方炸弹
+                        if (targetChessType == ChessType.BOOM_CHESS &&
+                                (currentPlayer == 0 && firstHandRemainMovableChessNum == 1
+                                        || currentPlayer == 1 && backHandRemainMovableChessNum == 1)) {
+                            continue;
+                        }
+
+                        int targetPositionType = PositionType.getType(u, v);
+                        // 目标位置是大本营且里面棋子不是军旗，则不进去
+                        if (targetPositionType == PositionType.FLAG_POSITION
+                                && targetChessType != ChessType.FLAG_CHESS) {
+                            continue;
+                        }
+
+                        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
+                        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
                             continue;
                         }
 

@@ -421,15 +421,6 @@ public class ListUDG {
         int targetChessType = ChessType.getType(targetChessId);
         int targetPositionType = PositionType.getType(targetX, targetY);
 
-        // 目标位置棋子为己方棋子，则不能够移动（在外面已经过滤掉了这种情况）
-
-        // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）（在外面已经过滤掉了这种情况）
-
-        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
-        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
-            return;
-        }
-
         // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
             int index = nowY * BoardInfo.LENGTH + nowX;
