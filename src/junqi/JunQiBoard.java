@@ -23,9 +23,7 @@ public class JunQiBoard implements Board {
     boolean draw;
     boolean gameOver;
 
-    // 用于判断平局的相关信息，包括目前已有多少轮没有棋子阵亡（turnsCountHasNoEatOtherSide），
-    // 以及makeMove之后是否有棋子阵亡（hasChessBeEatenThisTurn）
-    boolean hasChessBeEatenThisTurn;
+    // 用于判断平局的信息，表示已有多少轮没有棋子阵亡，初始为0
     int turnsCountHasNoEatOtherSide;
 
     // 双方军旗是否已经被夺掉，用来判断胜负
@@ -39,7 +37,6 @@ public class JunQiBoard implements Board {
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
 //        currentPlayer = 1;
-        hasChessBeEatenThisTurn = false;
         turnsCountHasNoEatOtherSide = 0;
         /*
          TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
@@ -60,7 +57,6 @@ public class JunQiBoard implements Board {
         newBoard.currentPlayer = currentPlayer;
         newBoard.draw = draw;
         newBoard.gameOver = gameOver;
-        newBoard.hasChessBeEatenThisTurn = hasChessBeEatenThisTurn;
         newBoard.turnsCountHasNoEatOtherSide = turnsCountHasNoEatOtherSide;
         newBoard.firstHandFlagBeTaken = firstHandFlagBeTaken;
         newBoard.backtHandFlagBeTaken = backtHandFlagBeTaken;
@@ -138,8 +134,11 @@ public class JunQiBoard implements Board {
             } else {
                 firstHandFlagBeTaken = true;
             }
+        } else if (endChessType == ChessType.NO_CHESS) {
+            // 4.若当前目标位置没有棋子，则直接更新目标位置的棋子id
+            board[endPosition.getX()][endPosition.getY()] = startChessId;
         } else {
-            // 4.其它类型（包括司令~排长和工兵）直接比较大小即可，
+            // 5.其它类型（包括司令~排长和工兵）直接比较大小即可，
             // 但是若当前位置棋子是炸弹，会与目标位置棋子同归于尽，则直接将起始和终止点都置为0表示空
             if (startChessType == ChessType.BOOM_CHESS) {
                 // 当前位置是炸弹，会炸掉对方，双方可移动棋子数各减1
@@ -170,35 +169,45 @@ public class JunQiBoard implements Board {
         }
 
         /*
+            平局信息更新
             根据目标位置是否有棋子，判断当前这一步棋是否有棋子被吃掉，
-            如果有棋子被吃掉，则turnsCountHasNoEatOtherSide - 1
+            如果有棋子被吃掉，则turnsCountHasNoEatOtherSide置为0重新计算
          */
-        if (endChessId > 0) {
+        if (endChessId != 0) {
             turnsCountHasNoEatOtherSide = 0;
-            hasChessBeEatenThisTurn = true;
         } else {
             turnsCountHasNoEatOtherSide++;
-            hasChessBeEatenThisTurn = false;
         }
 
         /*
-            判断游戏是否结束（平局判断比较麻烦）
+            判断游戏是否结束，需判断给出胜负平局状态，以及赢家
         */
-        // 胜负判断
+        // 夺掉军旗，由于当前轮次选手只能夺掉对方军旗，因此若有军旗被夺掉，则本轮选手获胜
+        // TODO（这里需要问一下军旗和可移动数哪个获胜优先级更高，现在的逻辑是军旗优先级更高）
         if (firstHandFlagBeTaken || backtHandFlagBeTaken) {
             gameOver = true;
             winner = currentPlayer;
         }
 
-        if (firstHandRemainMovableChessNum == 0) {
+        // 连续20步双方无棋子阵亡，则判平局
+        if (turnsCountHasNoEatOtherSide >= 20) {
             gameOver = true;
-            winner = 1; // 先手方可移动棋子为0，后手方胜利
-        } else {
-            gameOver = false;
-            winner = 0; // 后手方可移动棋子为0，先手方胜利
+            draw = true;
         }
-        // TODO 平局判断（连续20步双方无棋子阵亡，则判平局）
 
+        if (firstHandRemainMovableChessNum == 0 && backHandRemainMovableChessNum == 0) {
+            // 两方都没有可移动棋子，则是平局
+            gameOver = true;
+            draw = true;
+        } else if (firstHandRemainMovableChessNum == 0)  {
+            // 先手方可移动棋子数为0，则后手方胜
+            gameOver = true;
+            winner = 1;
+        } else if (backHandRemainMovableChessNum == 0) {
+            // 后手方可移动棋子数为0， 则先手方胜
+            gameOver = true;
+            winner = 0;
+        }
 
         if (currentPlayer == 0) {
             currentPlayer = 1;
