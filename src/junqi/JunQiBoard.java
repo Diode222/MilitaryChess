@@ -22,7 +22,15 @@ public class JunQiBoard implements Board {
     int winner;
     boolean draw;
     boolean gameOver;
-    int turnsHasNoEatOtherSide;
+
+    // 用于判断平局的相关信息，包括目前已有多少轮没有棋子阵亡（turnsCountHasNoEatOtherSide），
+    // 以及makeMove之后是否有棋子阵亡（hasChessBeEatenThisTurn）
+    boolean hasChessBeEatenThisTurn;
+    int turnsCountHasNoEatOtherSide;
+
+    // 双方军旗是否已经被夺掉，用来判断胜负
+    boolean firstHandFlagBeTaken = false;
+    boolean backtHandFlagBeTaken = false;
 
     // 双方棋子剩余可移动数目，用于判断局势和胜负
     int firstHandRemainMovableChessNum;
@@ -30,10 +38,15 @@ public class JunQiBoard implements Board {
 
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
-        currentPlayer = 1;
-        turnsHasNoEatOtherSide = 0;
-        firstHandRemainMovableChessNum = 25;
-        backHandRemainMovableChessNum = 25;
+//        currentPlayer = 1;
+        hasChessBeEatenThisTurn = false;
+        turnsCountHasNoEatOtherSide = 0;
+        /*
+         TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
+          则有22个，需要根据网络得到的棋盘返回值判断，但我自己训练棋盘就只考虑21个）
+        */
+        firstHandRemainMovableChessNum = 21; // 初始有21个可移动棋子
+        backHandRemainMovableChessNum = 21;
     }
 
     public void setBoard(int[][] board) {
@@ -47,7 +60,12 @@ public class JunQiBoard implements Board {
         newBoard.currentPlayer = currentPlayer;
         newBoard.draw = draw;
         newBoard.gameOver = gameOver;
-        newBoard.turnsHasNoEatOtherSide = turnsHasNoEatOtherSide;
+        newBoard.hasChessBeEatenThisTurn = hasChessBeEatenThisTurn;
+        newBoard.turnsCountHasNoEatOtherSide = turnsCountHasNoEatOtherSide;
+        newBoard.firstHandFlagBeTaken = firstHandFlagBeTaken;
+        newBoard.backtHandFlagBeTaken = backtHandFlagBeTaken;
+        newBoard.firstHandRemainMovableChessNum = firstHandRemainMovableChessNum;
+        newBoard.backHandRemainMovableChessNum = backHandRemainMovableChessNum;
         newBoard.board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
@@ -89,20 +107,21 @@ public class JunQiBoard implements Board {
                 // 当前位置是工兵可以排地雷，则目标位置更新为当前位置的工兵
                 board[endPosition.getX()][endPosition.getY()] = startChessId;
                 // 对方地雷不可移动，所以可移动棋子数不减1
-            } else {
-                // 当前位置不是工兵，则与目标位置地雷同归于尽
+            } else if (startChessType == ChessType.BOOM_CHESS) {
+                // 当前位置是炸弹，可以炸掉对方地雷
                 board[endPosition.getX()][endPosition.getY()] = 0;
-                // 棋子与地雷同归于尽，己方可移动棋子数减1
+                // 己方炸弹与对方地雷同归于尽，己方可移动棋子减1
                 if (currentPlayer == 0) {
                     firstHandRemainMovableChessNum--;
                 } else {
                     backHandRemainMovableChessNum--;
                 }
             }
+            // 由于规则表示除了工兵和炸弹都不能排掉地雷，所以会过滤掉所有非工兵炸弹撞地雷的move
         } else if (endChessType == ChessType.FLAG_CHESS) {
             // 3.目标位置是军旗，除炸弹以外的棋子都可以吃（炸弹会同归于尽）
             if (startChessType == ChessType.BOOM_CHESS) {
-                // 当前位置是炸弹炸掉对方军旗，更新己方可移动棋子数目（用于训练）
+                // 当前位置是炸弹可炸掉对方军旗，更新己方可移动棋子数目（用于训练）
                 board[endPosition.getX()][endPosition.getY()] = 0;
                 if (currentPlayer == 0) {
                     firstHandRemainMovableChessNum--;
@@ -112,6 +131,12 @@ public class JunQiBoard implements Board {
             } else {
                 // 当前不是炸弹，则可以吃掉军旗
                 board[endPosition.getX()][endPosition.getY()] = startChessId;
+            }
+            // 由于军旗被夺掉，需要更新军旗夺掉的bool值用于判断胜负
+            if (currentPlayer == 0) {
+                backtHandFlagBeTaken = true;
+            } else {
+                firstHandFlagBeTaken = true;
             }
         } else {
             // 4.其它类型（包括司令~排长和工兵）直接比较大小即可，
@@ -145,9 +170,41 @@ public class JunQiBoard implements Board {
         }
 
         /*
-            判断游戏是否结束
+            根据目标位置是否有棋子，判断当前这一步棋是否有棋子被吃掉，
+            如果有棋子被吃掉，则turnsCountHasNoEatOtherSide - 1
          */
-        // TODO
+        if (endChessId > 0) {
+            turnsCountHasNoEatOtherSide = 0;
+            hasChessBeEatenThisTurn = true;
+        } else {
+            turnsCountHasNoEatOtherSide++;
+            hasChessBeEatenThisTurn = false;
+        }
+
+        /*
+            判断游戏是否结束（平局判断比较麻烦）
+        */
+        // 胜负判断
+        if (firstHandFlagBeTaken || backtHandFlagBeTaken) {
+            gameOver = true;
+            winner = currentPlayer;
+        }
+
+        if (firstHandRemainMovableChessNum == 0) {
+            gameOver = true;
+            winner = 1; // 先手方可移动棋子为0，后手方胜利
+        } else {
+            gameOver = false;
+            winner = 0; // 后手方可移动棋子为0，先手方胜利
+        }
+        // TODO 平局判断（连续20步双方无棋子阵亡，则判平局）
+
+
+        if (currentPlayer == 0) {
+            currentPlayer = 1;
+        } else {
+            currentPlayer = 0;
+        }
     }
 
     @Override
@@ -183,6 +240,13 @@ public class JunQiBoard implements Board {
                         // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）TODO（存疑,需要考虑是否合理）
                         if (!ChessStrengthCompare.isStrongerOrEqualThan(nowChessId, targetChessId)
                                 && nowChessType != ChessType.BOOM_CHESS) {
+                            continue;
+                        }
+
+                        // 目标棋子是地雷，本方棋子不是工兵或炸弹时，不可移动（这种情况下本方棋子死亡，地雷不会被排掉）
+                        int targetChessType = ChessType.getType(targetChessId);
+                        if (targetChessType == ChessType.MINE_CHESS
+                                && !(nowChessType == ChessType.SOLDIER_CHESS || nowChessType == ChessType.BOOM_CHESS)) {
                             continue;
                         }
 
