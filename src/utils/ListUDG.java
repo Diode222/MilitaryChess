@@ -551,7 +551,6 @@ public class ListUDG {
             List<Position> positionsTurn = getPositionsTurn(positions);
             JunQiMove move = new JunQiMove(positionsTurn);
             moves.add(move);
-            System.out.println("bingo found");
             return true;
         }
 
@@ -596,7 +595,6 @@ public class ListUDG {
             // 拐点位置前后两个节点的x，y坐标均不相同，因为工兵铁路拐点必定是上下左右四个方向，可以看棋盘理解
             if (positions.get(i - 1).getX() != positions.get(i + 1).getX()
                 && positions.get(i - 1).getY() != positions.get(i + 1).getY()) {
-                System.out.println("here" + positions.get(i).getX() + " " + positions.get(i).getY());
                 positionsTurn.add(positions.get(i));
             }
         }

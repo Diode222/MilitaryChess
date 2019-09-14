@@ -1,11 +1,15 @@
 package junqi;
 
 import chessPostionInfo.Position;
+import global.BoardLayout;
 import mcts.CallLocation;
+import mcts.FinalSelectionPolicy;
+import mcts.MCTS;
 import mcts.Move;
 import utils.ListUDG;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
 
@@ -33,6 +37,37 @@ public class Main {
 //            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 //        }
 
-        
+        MCTS mcts = new MCTS();
+        mcts.setExplorationConstant(0.2);
+        mcts.setTimeDisplay(true);
+        Move move;
+        mcts.setOptimisticBias(0.0d);
+        mcts.setPessimisticBias(0.0d);
+        mcts.setMoveSelectionPolicy(FinalSelectionPolicy.robustChild);
+        int []scores = new int[3];
+
+        for (int i = 0; i < 100; i++) {
+            JunQiBoard junqi = new JunQiBoard();
+            junqi.initBoard(BoardLayout.NORMAL_LAYOUT_FIRST);
+            while (!junqi.gameOver()) {
+                move = mcts.runMCTS_UCT(junqi, 10000, false);
+                junqi.makeMove(move);
+            }
+
+            System.out.println("----------------");
+            junqi.bPrint();
+
+            double []scr = junqi.getScore();
+            if (scr[0] > 0.9) {
+                scores[0]++;
+            } else if (scr[1] > 0.9) {
+                scores[1]++;
+            } else {
+                scores[2]++;
+            }
+
+            System.out.println(Arrays.toString(scr));
+            System.out.println(Arrays.toString(scores));
+        }
     }
 }
