@@ -1,5 +1,6 @@
 package junqi;
 
+import chessPostionInfo.Position;
 import global.BoardInfo;
 import global.ChessType;
 import global.PositionType;
@@ -8,10 +9,8 @@ import mcts.CallLocation;
 import mcts.Move;
 import utils.ChessStrengthCompare;
 import utils.ListUDG;
-import utils.PathFinder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class JunQiBoard implements Board {
 
@@ -25,10 +24,16 @@ public class JunQiBoard implements Board {
     boolean gameOver;
     int turnsHasNoEatOtherSide;
 
+    // 双方棋子剩余可移动数目，用于判断局势和胜负
+    int firstHandRemainMovableChessNum;
+    int backHandRemainMovableChessNum;
+
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
         currentPlayer = 1;
         turnsHasNoEatOtherSide = 0;
+        firstHandRemainMovableChessNum = 25;
+        backHandRemainMovableChessNum = 25;
     }
 
     public void setBoard(int[][] board) {
@@ -54,6 +59,94 @@ public class JunQiBoard implements Board {
 
     @Override
     public void makeMove(Move m) {
+        JunQiMove move = (JunQiMove) m;
+        Position startPosition = move.points.get(0);
+        Position endPosition = move.points.get(move.points.size() - 1);
+
+        // move起始点和目标点的相关信息
+        int startChessId = board[startPosition.getX()][startPosition.getY()];
+        int startChessType = ChessType.getType(startChessId);
+        int startPositionType = PositionType.getType(startPosition.getX(), startPosition.getY());
+        int endChessId = board[endPosition.getX()][endPosition.getY()];
+        int endChessType = ChessType.getType(endChessId);
+        int endPositionType = PositionType.getType(endPosition.getX(), endPosition.getY());
+
+        /*
+            更新棋盘
+        */
+        // 当前位置棋子走出去，当前位置应该置为0表示当前位置没有棋子
+        board[startPosition.getX()][startPosition.getY()] = 0;
+        // 目标位置分情况讨论
+        if (endChessType == ChessType.BOOM_CHESS) {
+            // 1.目标位置是炸弹，则直接置0表示位置为空
+            board[endPosition.getX()][endPosition.getY()] = 0;
+            // 棋子与炸弹同归于尽，两方可移动棋子各减1（一定可移动，炸弹可移动，己方棋子能走也可移动）
+            firstHandRemainMovableChessNum--;
+            backHandRemainMovableChessNum--;
+        } else if (endChessType == ChessType.MINE_CHESS) {
+            // 2.目标位置是地雷，判断当前位置是否是工兵
+            if (startChessType == ChessType.SOLDIER_CHESS) {
+                // 当前位置是工兵可以排地雷，则目标位置更新为当前位置的工兵
+                board[endPosition.getX()][endPosition.getY()] = startChessId;
+                // 对方地雷不可移动，所以可移动棋子数不减1
+            } else {
+                // 当前位置不是工兵，则与目标位置地雷同归于尽
+                board[endPosition.getX()][endPosition.getY()] = 0;
+                // 棋子与地雷同归于尽，己方可移动棋子数减1
+                if (currentPlayer == 0) {
+                    firstHandRemainMovableChessNum--;
+                } else {
+                    backHandRemainMovableChessNum--;
+                }
+            }
+        } else if (endChessType == ChessType.FLAG_CHESS) {
+            // 3.目标位置是军旗，除炸弹以外的棋子都可以吃（炸弹会同归于尽）
+            if (startChessType == ChessType.BOOM_CHESS) {
+                // 当前位置是炸弹炸掉对方军旗，更新己方可移动棋子数目（用于训练）
+                board[endPosition.getX()][endPosition.getY()] = 0;
+                if (currentPlayer == 0) {
+                    firstHandRemainMovableChessNum--;
+                } else {
+                    backHandRemainMovableChessNum--;
+                }
+            } else {
+                // 当前不是炸弹，则可以吃掉军旗
+                board[endPosition.getX()][endPosition.getY()] = startChessId;
+            }
+        } else {
+            // 4.其它类型（包括司令~排长和工兵）直接比较大小即可，
+            // 但是若当前位置棋子是炸弹，会与目标位置棋子同归于尽，则直接将起始和终止点都置为0表示空
+            if (startChessType == ChessType.BOOM_CHESS) {
+                // 当前位置是炸弹，会炸掉对方，双方可移动棋子数各减1
+                board[endPosition.getX()][endPosition.getY()] = 0;
+                firstHandRemainMovableChessNum--;
+                backHandRemainMovableChessNum--;
+            } else {
+                // 当前位置不是炸弹，是司令~排长或士兵，而目标位置也是司令~排长或士兵，则直接比较大小即可
+                if (ChessStrengthCompare.getChessStrength(startChessId)
+                        == ChessStrengthCompare.getChessStrength(endChessId)) {
+                    // 当前位置和目标位置一样大，则同归于尽
+                    board[endPosition.getX()][endPosition.getY()] = 0;
+                    // 同归于尽，两方可移动棋子各减1
+                    firstHandRemainMovableChessNum--;
+                    backHandRemainMovableChessNum--;
+                } else if (ChessStrengthCompare.isStrongerOrEqualThan(startChessId, endChessId)) {
+                    // 当前位置大于目标位置可以吃掉，则更新目标位置的棋子为当前位置棋子
+                    board[endPosition.getX()][endPosition.getY()] = startChessId;
+                    // 对方棋子被吃，对方可移动棋子数减1
+                    if (currentPlayer == 0) {
+                        backHandRemainMovableChessNum--;
+                    } else {
+                        firstHandRemainMovableChessNum--;
+                    }
+                }
+                // 当前位置小于目标位置，现在的逻辑里面并不会这么走，可能需要优化（TODO 待考虑）
+            }
+        }
+
+        /*
+            判断游戏是否结束
+         */
         // TODO
     }
 
@@ -87,7 +180,7 @@ public class JunQiBoard implements Board {
                             continue;
                         }
 
-                        // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）TODO（存疑）
+                        // 目标棋子比当前棋子大时，不能移动（本方棋子为炸弹除外）TODO（存疑,需要考虑是否合理）
                         if (!ChessStrengthCompare.isStrongerOrEqualThan(nowChessId, targetChessId)
                                 && nowChessType != ChessType.BOOM_CHESS) {
                             continue;
