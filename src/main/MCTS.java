@@ -1,7 +1,7 @@
-package mcts;
+package main;
 
-import mcts.support.HeuristicFunction;
-import mcts.support.PlayoutSelection;
+import main.support.HeuristicFunction;
+import main.support.PlayoutSelection;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -98,9 +98,9 @@ public class MCTS {
 	 * until you find an unexpanded child node. Expand it. Run a random playout.
 	 * Backpropagate results of the playout.
 	 * 
-	 * @param @node
+	 * @param node
 	 *            Node from which to start selection
-	 * @param @brd
+	 * @param brd
 	 *            Board state to work from.
 	 */
 	private void select(Board currentBoard, Node currentNode) {

@@ -5,7 +5,7 @@ import global.BoardInfo;
 import global.ChessType;
 import global.PositionType;
 import junqi.JunQiMove;
-import mcts.Move;
+import main.Move;
 
 import java.util.ArrayList;
 import java.util.HashMap;

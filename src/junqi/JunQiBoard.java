@@ -4,9 +4,9 @@ import chessPostionInfo.Position;
 import global.BoardInfo;
 import global.ChessType;
 import global.PositionType;
-import mcts.Board;
-import mcts.CallLocation;
-import mcts.Move;
+import main.Board;
+import main.CallLocation;
+import main.Move;
 import utils.ChessStrengthCompare;
 import utils.ListUDG;
 

@@ -1,4 +1,4 @@
-package mcts;
+package main;
 
 public class BoardNodePair {
 	private Board b;

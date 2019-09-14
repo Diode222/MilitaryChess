@@ -1,12 +1,11 @@
 package junqi;
 
 import chessPostionInfo.Position;
-import mcts.Move;
+import main.Move;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class JunQiMove implements mcts.Move {
+public class JunQiMove implements main.Move {
 
     List<Position> points;
 

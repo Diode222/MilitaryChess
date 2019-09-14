@@ -1,14 +1,10 @@
 package junqi;
 
-import chessPostionInfo.Position;
 import global.BoardLayout;
-import mcts.CallLocation;
-import mcts.FinalSelectionPolicy;
-import mcts.MCTS;
-import mcts.Move;
-import utils.ListUDG;
+import main.FinalSelectionPolicy;
+import main.MCTS;
+import main.Move;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
@@ -50,7 +46,7 @@ public class Main {
             JunQiBoard junqi = new JunQiBoard();
             junqi.initBoard(BoardLayout.NORMAL_LAYOUT_FIRST);
             while (!junqi.gameOver()) {
-                move = mcts.runMCTS_UCT(junqi, 10000, false);
+                move = mcts.runMCTS_UCT(junqi, 1000, false);
                 junqi.makeMove(move);
             }
 
