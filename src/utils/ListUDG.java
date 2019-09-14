@@ -469,6 +469,8 @@ public class ListUDG {
         // 大本营位置已经在外面进行了过滤
 
         // 只剩下当前位置在铁路，且目标位置也在铁路的情况（判断语句用来方便看清逻辑）
+        // 都在铁路上且都在同一直线上，也需要判断拐弯与否，如(1, 5)和(1, 6)需要拐弯，
+        // (1, 5)和(1, 1)需要拐弯
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType == PositionType.RAILWAY_POSITION) {
             if (nowChessType == ChessType.SOLDIER_CHESS) {
                 // 当前是工兵，可以拐弯（最复杂的路径判断，不需要找到最短路径，只需找出一条可行路径即可，因此使用dfs）
@@ -491,6 +493,11 @@ public class ListUDG {
                         end = nowX;
                     }
                     for (int i = start + 1; i < end; i++) {
+                        // 当前在同一条直线上，但是仍需要拐弯，如(0, 4)到(4, 4)，不能移动
+                        if (PositionType.getType(i, nowY) != PositionType.RAILWAY_POSITION) {
+                            return;
+                        }
+
                         // 路径上存在其它棋子，不能移动
                         if (board[i][nowY] != 0) {
                             return;
@@ -513,7 +520,18 @@ public class ListUDG {
                         start = targetY;
                         end = nowY;
                     }
+
+                    // 竖着走有两个特殊情况(1, 5)到(1, 6)和(3, 5)到(3, 6)，不能移动
+                    if (start == 5 && end == 6 && (nowX == 1 || nowX == 3)) {
+                        return;
+                    }
+
                     for (int i = start + 1; i < end; i++) {
+                        // 当前在同一条直线上，但是仍需要拐弯，如(1, 5)到(1, 1)，不能移动
+                        if (PositionType.getType(nowX, i) != PositionType.RAILWAY_POSITION) {
+                            return;
+                        }
+
                         // 路径上存在其它棋子，不能移动
                         if (board[nowX][i] != 0) {
                             return;
@@ -535,17 +553,17 @@ public class ListUDG {
     // positions在递归过程中存下路径中经过的所有位置点，等到确定两个位置可以连通的时候，再分析拐弯的是哪些位置点
     static private boolean canMoveToDFS(int[][] board, int x, int y, int targetX, int targetY, List<Position> positions,
                                         List<Move> moves, boolean[] steped, int originalChessId) {
-        // 当前递归位置点已访问过或已有一个棋子且大于工兵（不是工兵，军旗，地雷，炸弹，即只能是NORMAL_CHESS），
-        // 则此条路径不通（如果当前递归位置点是起始棋子，则表示是进入，可以判断跳过）
+        // 当前递归位置点已访问过，或已有一个棋子且当前并没有到终点，则此条路径不通，
+        // 如果当前递归位置点是起始棋子，则表示是进入，可以判断跳过
         if (steped[y * BoardInfo.LENGTH + x]
-                || board[x][y] > 0 && ChessType.getType(board[x][y]) == ChessType.NORMAL_CHESS) {
-            // 所有的NORMAL_CHESS都比工兵大
-            positions.add(Position.newBuilder().setX(x).setY(y).build()); // 仍然要添加进去不然上一层会remove错
+            || board[x][y] > 0 && (x != targetX || y != targetY) && board[x][y] != originalChessId) {
+            positions.add(Position.newBuilder().setX(x).setY(y).build()); // 仍然要添加进去不然上一个调用栈会remove错
             return false;
         }
 
         // 找到一条路径就可以返回了
         if (x == targetX && y == targetY) {
+            // 不需要判断大小，外面已经过滤掉了小于的情况
             positions.add(Position.newBuilder().setX(x).setY(y).build());
             // 先对positions进行处理，得到拐弯点的记录（positions是所有点的记录）
             List<Position> positionsTurn = getPositionsTurn(positions);
