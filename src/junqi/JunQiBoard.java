@@ -41,8 +41,12 @@ public class JunQiBoard implements Board {
     int backHandRemainMovableChessNum;
 
     // 双方目前得分，每吃掉一个棋子可以得到对应的分数
-    int firstHandScore;
-    int backHandScore;
+    int firstHandRealScore;
+    int backHandRealScore;
+
+    // 用于计算迭代博弈树的得分
+    int firstHandCalculateScore;
+    int backHandCalculateScore;
 
     public JunQiBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
@@ -58,8 +62,11 @@ public class JunQiBoard implements Board {
         firstHandRemainMovableChessNum = 20; // 初始有20个可移动棋子
         backHandRemainMovableChessNum = 20;
 
-        firstHandScore = 0;
-        backHandScore = 0;
+        firstHandRealScore = 0;
+        backHandRealScore = 0;
+
+        firstHandCalculateScore = 0;
+        backHandCalculateScore = 0;
     }
 
     public void initBoard(int[][] board) {
@@ -78,8 +85,10 @@ public class JunQiBoard implements Board {
         newBoard.backtHandFlagBeTaken = backtHandFlagBeTaken;
         newBoard.firstHandRemainMovableChessNum = firstHandRemainMovableChessNum;
         newBoard.backHandRemainMovableChessNum = backHandRemainMovableChessNum;
-        newBoard.firstHandScore = firstHandScore;
-        newBoard.backHandScore = backHandScore;
+        newBoard.firstHandRealScore = firstHandRealScore;
+        newBoard.backHandRealScore = backHandRealScore;
+        newBoard.firstHandCalculateScore = firstHandCalculateScore;
+        newBoard.backHandCalculateScore = backHandCalculateScore;
         newBoard.board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
@@ -208,15 +217,19 @@ public class JunQiBoard implements Board {
             FIXME 这样写的坏处是后续不能扩展去主动撞死的逻辑
         */
         if (currentPlayer == 0) {
-            firstHandScore += ChessValue.getValue(endChessId);
+            firstHandRealScore += ChessValue.getRealValue(endChessId);
+            firstHandCalculateScore += ChessValue.getCalculateValue(endChessId);
             // 目标位置没有棋子，说明同归于尽了，得分
             if (board[endPosition.getX()][endPosition.getY()] == 0) {
-                backHandScore += ChessValue.getValue(startChessId);
+                backHandRealScore += ChessValue.getRealValue(startChessId);
+                backHandCalculateScore += ChessValue.getCalculateValue(startChessId);
             }
         } else {
-            backHandScore += ChessValue.getValue(endChessId);
+            backHandRealScore += ChessValue.getRealValue(endChessId);
+            backHandCalculateScore += ChessValue.getCalculateValue(endChessId);
             if (board[endPosition.getX()][endPosition.getY()] == 0) {
-                firstHandScore += ChessValue.getValue(startChessId);
+                firstHandRealScore += ChessValue.getRealValue(startChessId);
+                firstHandCalculateScore += ChessValue.getCalculateValue(startChessId);
             }
         }
 
@@ -244,9 +257,9 @@ public class JunQiBoard implements Board {
         // 连续20步双方无棋子阵亡，则比较动态分来分胜负平
         if (turnsCountChessHasNoEat >= 20) {
             gameOver = true;
-            if (firstHandScore > backHandScore) {
+            if (firstHandCalculateScore > backHandCalculateScore) {
                 winner = 0;
-            } else if (backHandScore > firstHandScore) {
+            } else if (backHandCalculateScore > firstHandCalculateScore) {
                 winner = 1;
             } else {
                 draw = true;
@@ -256,9 +269,9 @@ public class JunQiBoard implements Board {
         if (firstHandRemainMovableChessNum == 0 && backHandRemainMovableChessNum == 0) {
             // 两方都没有可移动棋子，判断动态分
             gameOver = true;
-            if (firstHandScore > backHandScore) {
+            if (firstHandCalculateScore > backHandCalculateScore) {
                 winner = 0;
-            } else if (backHandScore > firstHandScore) {
+            } else if (backHandCalculateScore > firstHandCalculateScore) {
                 winner = 1;
             } else {
                 draw = true;
@@ -445,10 +458,17 @@ public class JunQiBoard implements Board {
         double []score;
         score = new double[2];
         if (!draw) {
-            score[winner] += 1.0d;
+            if (winner == 0) {
+                score[0] = 3500 + firstHandRealScore;
+                score[1] = backHandRealScore;
+            } else {
+                score[0] = firstHandRealScore;
+                score[1] = 3500 + backHandRealScore;
+            }
         } else {
-            score[0] += 0.5d;
-            score[1] += 0.5d;
+            // 平局各加(50+动态分)
+            score[0] = 1750 + firstHandRealScore;
+            score[1] = 1750 + backHandRealScore;
         }
         return score;
     }
@@ -460,16 +480,16 @@ public class JunQiBoard implements Board {
         if (!draw) {
             // 赢家加(100+动态分)，输家加(动态分)
             if (winner == 0) {
-                score[0] = 100 + firstHandScore;
-                score[1] = backHandScore;
+                score[0] = 100 + firstHandRealScore;
+                score[1] = backHandRealScore;
             } else {
-                score[0] = firstHandScore;
-                score[1] = 100 + backHandScore;
+                score[0] = firstHandRealScore;
+                score[1] = 100 + backHandRealScore;
             }
         } else {
             // 平局各加(50+动态分)
-            score[0] = 50 + firstHandScore;
-            score[1] = 50 + backHandScore;
+            score[0] = 50 + firstHandRealScore;
+            score[1] = 50 + backHandRealScore;
         }
         return score;
     }
