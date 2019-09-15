@@ -1,14 +1,10 @@
-package junqi;
+package militaryChess;
 
-import chessPostionInfo.Position;
 import global.BoardLayout;
-import main.CallLocation;
-import main.FinalSelectionPolicy;
-import main.MCTS;
-import main.Move;
-import utils.ListUDG;
+import mcts.FinalSelectionPolicy;
+import mcts.MCTS;
+import mcts.Move;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
@@ -69,7 +65,7 @@ public class Main {
         int []eachWinsCount = new int[3];
 
         for (int i = 0; i < 100; i++) {
-            JunQiBoard junqi = new JunQiBoard();
+            MilitaryBoard junqi = new MilitaryBoard();
             junqi.currentPlayer = 0;
 //            // TODO remove after test
 //            junqi.firstHandRemainMovableChessNum = 1;

@@ -1,4 +1,4 @@
-package main;
+package mcts;
 
 public enum FinalSelectionPolicy {
 	maxChild, // The child with highest SCORE

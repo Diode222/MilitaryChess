@@ -1,6 +1,6 @@
-package main.support;
+package mcts.support;
 
-import main.Board;
+import mcts.Board;
 
 /**
  * Use this as a replacement for the conventional

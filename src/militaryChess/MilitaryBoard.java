@@ -1,19 +1,19 @@
-package junqi;
+package militaryChess;
 
 import chessPostionInfo.Position;
 import global.BoardInfo;
 import global.ChessType;
 import global.ChessValue;
 import global.PositionType;
-import main.Board;
-import main.CallLocation;
-import main.Move;
+import mcts.Board;
+import mcts.CallLocation;
+import mcts.Move;
 import utils.ChessStrengthCompare;
 import utils.ListUDG;
 
 import java.util.ArrayList;
 
-public class JunQiBoard implements Board {
+public class MilitaryBoard implements Board {
 
     final static public int FIRST_HAND = 0;
     final static public int BACK_HAND = 1;
@@ -48,7 +48,7 @@ public class JunQiBoard implements Board {
     int firstHandCalculateScore;
     int backHandCalculateScore;
 
-    public JunQiBoard() {
+    public MilitaryBoard() {
         board = new int[BoardInfo.LENGTH][BoardInfo.HEIGHT];
       
         turnsCountChessHasNoEat = 0;
@@ -75,7 +75,7 @@ public class JunQiBoard implements Board {
 
     @Override
     public Board duplicate() {
-        JunQiBoard newBoard = new JunQiBoard();
+        MilitaryBoard newBoard = new MilitaryBoard();
         newBoard.winner = winner;
         newBoard.currentPlayer = currentPlayer;
         newBoard.draw = draw;
@@ -113,7 +113,7 @@ public class JunQiBoard implements Board {
             return;
         }
 
-        JunQiMove move = (JunQiMove) m;
+        MilitaryMove move = (MilitaryMove) m;
         Position startPosition = move.points.get(0);
         Position endPosition = move.points.get(move.points.size() - 1);
 
@@ -358,7 +358,7 @@ public class JunQiBoard implements Board {
                             // duplicate一个新棋盘用来表示吃后下一步的状态（部分需要的状态）
                             if (targetChessType != ChessType.FLAG_CHESS) {
                                 // 若目标点为军旗，则不跳过
-                                JunQiBoard tmpBoard = (JunQiBoard) this.duplicate();
+                                MilitaryBoard tmpBoard = (MilitaryBoard) this.duplicate();
                                 if (currentPlayer == 0) {
                                     tmpBoard.currentPlayer = 1;
                                     tmpBoard.backHandRemainMovableChessNum = 20; // 不设置可能死循环
