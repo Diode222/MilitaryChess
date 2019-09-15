@@ -49,11 +49,12 @@ public class MCTS {
 		long startTime = System.nanoTime();
 
 		if (!pmode) {
+//			// 按照步数进行迭代
 //			for (int i = 0; i < runs; i++) {
 //				select(startingBoard.duplicate(), rootNode);
 //			}
 
-			// TODO 按照时间限制进行遍历
+			// 按照时间限制进行迭代
 			while ((System.nanoTime() - startTime) / 1000000 <= 2500) {
 				select(startingBoard.duplicate(), rootNode);
 			}

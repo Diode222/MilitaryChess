@@ -22,19 +22,30 @@ public class Main {
 ////                {0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 46, 36}, // x = 2
 ////                {35, 24, 39, 40, 41, 42, 0, 44, 47, 45, 0, 37}, // x = 3
 ////                {49, 25, 0, 0, 0, 0, 2, 0, 0, 0, 38, 0}, // x = 4
-//                {50 ,0 ,0, 0, 0 ,0 ,31, 0 ,6, 0 ,20 ,0},
-//                {26, 49 ,0, 0, 0, 0 ,16 ,0, 0, 5 ,10 ,17},
-//                {48 ,0, 0 ,0, 0, 0, 0 ,0 ,0 ,0 ,11, 23},
-//                {42, 0, 0, 30, 0 ,0, 0 ,0 ,0 ,0 ,24, 1},
-//                {0 ,45 ,0, 27, 0 ,0 ,0 ,0, 0 ,0, 0 ,25}
+////                {50 ,0 ,0, 0, 0 ,0 ,31, 0 ,6, 0 ,20 ,0},
+////                {26, 49 ,0, 0, 0, 0 ,16 ,0, 0, 5 ,10 ,17},
+////                {48 ,0, 0 ,0, 0, 0, 0 ,0 ,0 ,0 ,11, 23},
+////                {42, 0, 0, 30, 0 ,0, 0 ,0 ,0 ,0 ,24, 1},
+////                {0 ,45 ,0, 27, 0 ,0 ,0 ,0, 0 ,0, 0 ,25}
+//                {50   ,  0    , 0    , 0    , 0    , 0    , 0     ,0   ,  0   ,  0   ,  0   ,  0},
+//
+//                {26   , 22   ,  0   ,  0    , 0 ,    0  ,   0 ,    0    , 0  ,   0  ,   0  ,  17},
+//
+//                {48  ,   0   ,  0    , 0  ,   0    , 0    , 0    , 0    , 0   ,  0  ,  11  ,  23},
+//
+//                {42   ,  0    , 0   ,  0   ,  0 ,    0  ,   0   ,  0    , 0    , 0  ,  24   ,  1},
+//
+//                {45  ,   8     ,0   ,  0    , 0,     0   ,  0   ,  0   ,  0    , 0   ,  0   , 25}
 //        };
 //
 //        JunQiBoard junQiBoard = new JunQiBoard();
 //        junQiBoard.initBoard(board);
+//        junQiBoard.currentPlayer = 1;
 //
 //        ArrayList<Move> moves = new ArrayList<>();
 //
-//        ListUDG.canMoveTo(board, 4, 1, 4, 5, moves);
+////        ListUDG.canMoveTo(board, 4, 1, 4, 5, moves);
+//        moves = junQiBoard.getMoves(CallLocation.treePolicy);
 //
 //        for (Move move: moves) {
 //            JunQiMove junQiMove = (JunQiMove) move;
@@ -43,6 +54,7 @@ public class Main {
 //            }
 //            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 //        }
+//        System.out.println(moves.size() + " " + junQiBoard.gameOver() + " " + junQiBoard.winner);
 
         MCTS mcts = new MCTS();
         mcts.setExplorationConstant(1.4d); // TODO 可调节参数，越大代表越倾向于找访问次数较少的节点，会降低搜索深度提高宽度
@@ -55,9 +67,15 @@ public class Main {
 
         for (int i = 0; i < 100; i++) {
             JunQiBoard junqi = new JunQiBoard();
+            junqi.currentPlayer = 0;
             junqi.initBoard(new BoardLayout().getNormalLayoutFirst());
             while (!junqi.gameOver()) {
-                move = mcts.runMCTS_UCT(junqi, 1000, false);
+                try {
+                    move = mcts.runMCTS_UCT(junqi, 0, false);
+                } catch (Exception e) {
+//                    e.printStackTrace();
+                    move = null;
+                }
                 junqi.makeMove(move);
             }
 

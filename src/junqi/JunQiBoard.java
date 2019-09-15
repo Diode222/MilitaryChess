@@ -52,11 +52,11 @@ public class JunQiBoard implements Board {
         backtHandFlagBeTaken = false;
       
         /*
-         TODO 正常情况下，游戏伊始双方各有21个可移动棋子（非正常情况下，若把地雷放到大本营中，
-          则有22个，需要根据网络得到的棋盘返回值判断，但我自己训练棋盘就只考虑21个）
+         TODO 正常情况下，游戏伊始双方各有20个可移动棋子（非正常情况下，若把地雷放到大本营中，
+          则有21个，需要根据网络得到的棋盘返回值判断，但我自己训练棋盘就只考虑20个）
         */
-        firstHandRemainMovableChessNum = 21; // 初始有21个可移动棋子
-        backHandRemainMovableChessNum = 21;
+        firstHandRemainMovableChessNum = 20; // 初始有20个可移动棋子
+        backHandRemainMovableChessNum = 20;
 
         firstHandScore = 0;
         backHandScore = 0;
@@ -91,6 +91,19 @@ public class JunQiBoard implements Board {
 
     @Override
     public void makeMove(Move m) {
+        // 当获取到的getMoves.size() == 0时，这里的Move m会被异常捕获置为null，由于无棋可下，因此直接判当前选手输
+        if (m == null) {
+            gameOver = true;
+            if (currentPlayer == 0) {
+                winner = 1;
+                currentPlayer = 1;
+            } else {
+                winner = 0;
+                currentPlayer = 0;
+            }
+            return;
+        }
+
         JunQiMove move = (JunQiMove) m;
         Position startPosition = move.points.get(0);
         Position endPosition = move.points.get(move.points.size() - 1);
@@ -310,11 +323,48 @@ public class JunQiBoard implements Board {
                             continue;
                         }
 
-                        // 本方只剩一个可移动棋子时，不要去碰对方炸弹
-                        if (targetChessType == ChessType.BOOM_CHESS &&
-                                (currentPlayer == 0 && firstHandRemainMovableChessNum == 1
-                                        || currentPlayer == 1 && backHandRemainMovableChessNum == 1)) {
-                            continue;
+                        // 本方只剩一个可移动棋子时，只吃普通棋子，工兵和军旗，不要去碰炸弹和同样大的同归于尽
+                        if (currentPlayer == 0 && firstHandRemainMovableChessNum == 1
+                            || currentPlayer == 1 && backHandRemainMovableChessNum == 1) {
+                            // 跳过炸弹
+                            if (targetChessType == ChessType.BOOM_CHESS) {
+                                continue;
+                            }
+
+                            // 跳过同样大的
+                            if (ChessStrengthCompare.getChessStrength(nowChessId)
+                                    == ChessStrengthCompare.getChessStrength(targetChessId)) {
+                                continue;
+                            }
+
+                            // TODO 跳过一些极端情况，比如吃了目标点会被吃，则跳过，
+                            //  需要判断棋盘所有对方棋子是否可以吃掉当前棋子，如果可以吃掉，
+                            //  再判断能否到达想目标位置，只有确认安全才去吃掉对方棋子
+                            if (targetChessType != ChessType.FLAG_CHESS) {
+                                // 若目标点为军旗，则不跳过
+                                boolean passFlag = false;
+
+                                // 不用担心这段逻辑影响效率，当前只剩一个棋子，计算资源是过剩的
+                                for (int row = 0; row < BoardInfo.LENGTH; row++) {
+                                    for (int col = 0; col < BoardInfo.HEIGHT; col++) {
+                                        int backupHunterChessId = board[row][col];
+                                        int backupHunterChessType = ChessType.getType(backupHunterChessId);
+                                        // 备选棋子不能动，跳过
+                                        if (backupHunterChessType == ChessType.FLAG_CHESS
+                                            || backupHunterChessType == ChessType.MINE_CHESS
+                                            || backupHunterChessType == ChessType.NO_CHESS) {
+                                            continue;
+                                        }
+
+                                        // TODO 备选棋子比当前棋子小，跳过
+
+                                    }
+                                }
+
+                                if (passFlag) {
+                                    continue;
+                                }
+                            }
                         }
 
                         int targetPositionType = PositionType.getType(u, v);
@@ -336,7 +386,8 @@ public class JunQiBoard implements Board {
             }
         }
 
-        // 若当前选手没有可以移动的选择，即moves为空，则判当前选手输
+        // 若当前选手没有可以移动的选择，即moves为空，则判当前选手输这里逻辑和makeMove开头判null逻辑重复，
+        // 但两者目的不同，这里是为了博弈树迭代过程中的判空，makeMove处是为了最后返回move结果的判空
         if (moves.size() == 0) {
             gameOver = true;
             winner = (currentPlayer == 0) ? 1 : 0;

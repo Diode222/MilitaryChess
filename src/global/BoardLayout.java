@@ -15,4 +15,21 @@ public class BoardLayout {
     public int[][] getNormalLayoutFirst() {
         return NORMAL_LAYOUT_FIRST;
     }
+
+    // TODO remove
+    private int[][] test_layout = {
+            {50   ,  0    , 0    , 0    , 0    , 0    , 0     ,0   ,  0   ,  0   ,  0   ,  0},
+
+            {26   , 22   ,  0   ,  0    , 0 ,    0  ,   0 ,    0    , 0  ,   0  ,   0  ,  17},
+
+            {48  ,   0   ,  0    , 0  ,   0    , 0    , 0    , 0    , 0   ,  0  ,  11  ,  23},
+
+            {42   ,  0    , 0   ,  0   ,  0 ,    0  ,   0   ,  0    , 0    , 0  ,  24   ,  1},
+
+            {45  ,   8     ,0   ,  0    , 0,     0   ,  0   ,  0   ,  0    , 0   ,  0   , 25}
+    };
+
+    public int[][] getTest_layout() {
+        return test_layout;
+    }
 }
