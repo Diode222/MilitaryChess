@@ -451,8 +451,22 @@ public class JunQiBoard implements Board {
         return 2;
     }
 
+    // 用于做迭代的分数，主要是为了提高军旗的分值
     @Override
     public double[] getScore() {
+        double []score;
+        score = new double[2];
+        if (!draw) {
+            score[winner] += 1.0d;
+        } else {
+            score[0] += 0.5d;
+            score[1] += 0.5d;
+        }
+        return score;
+    }
+
+    // 用于展示的分数，是本局游戏的真实得分
+    public double[] getScoreToShow() {
         double []score;
         score = new double[2];
         if (!draw) {

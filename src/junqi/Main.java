@@ -62,7 +62,7 @@ public class Main {
         Move move;
         mcts.setOptimisticBias(0.0d);
         mcts.setPessimisticBias(0.0d);
-        mcts.setMoveSelectionPolicy(FinalSelectionPolicy.robustChild);
+        mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
         int []eachWinsCount = new int[3];
 
         for (int i = 0; i < 100; i++) {
@@ -82,7 +82,7 @@ public class Main {
             System.out.println("----------------");
             junqi.bPrint();
 
-            double []score = junqi.getScore();
+            double []score = junqi.getScoreToShow();
             if (score[0] > score[1]) {
                 eachWinsCount[0]++;
             } else if (score[1] > score[0]) {
