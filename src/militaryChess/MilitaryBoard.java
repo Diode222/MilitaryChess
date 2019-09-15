@@ -501,6 +501,7 @@ public class MilitaryBoard implements Board {
     // 用来肉眼看的输出
     public void bPrint() {
         for (int i = 0; i < BoardInfo.LENGTH; i++) {
+            System.out.print("{");
             for (int j = 0; j < BoardInfo.HEIGHT; j++) {
                 String tmp = "";
                 if (board[i][j] < 10) {
@@ -508,7 +509,7 @@ public class MilitaryBoard implements Board {
                 } else {
                     tmp += board[i][j];
                 }
-                System.out.print(tmp + "    ");
+                System.out.print(tmp + ",    ");
             }
             System.out.println("");
             System.out.println("");
