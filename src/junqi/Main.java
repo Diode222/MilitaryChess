@@ -67,7 +67,7 @@ public class Main {
 
         for (int i = 0; i < 100; i++) {
             JunQiBoard junqi = new JunQiBoard();
-            junqi.currentPlayer = 0;
+            junqi.currentPlayer = 1;
             junqi.initBoard(new BoardLayout().getNormalLayoutFirst());
             while (!junqi.gameOver()) {
                 try {

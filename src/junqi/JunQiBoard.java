@@ -337,31 +337,58 @@ public class JunQiBoard implements Board {
                                 continue;
                             }
 
-                            // TODO 跳过一些极端情况，比如吃了目标点会被吃，则跳过，
-                            //  需要判断棋盘所有对方棋子是否可以吃掉当前棋子，如果可以吃掉，
-                            //  再判断能否到达想目标位置，只有确认安全才去吃掉对方棋子
+                            /*
+                                跳过一些极端情况，比如吃了目标点会被吃，则跳过，
+                                需要判断棋盘所有对方棋子是否可以吃掉当前棋子，如果可以吃掉，
+                                再判断能否到达想目标位置，只有确认安全才去吃掉对方棋子
+                            */
+                            // duplicate一个新棋盘用来表示吃后下一步的状态（部分需要的状态）
                             if (targetChessType != ChessType.FLAG_CHESS) {
                                 // 若目标点为军旗，则不跳过
                                 boolean passFlag = false;
-
+                                JunQiBoard tmpBoard = (JunQiBoard) this.duplicate();
+                                if (currentPlayer == 0) {
+                                    tmpBoard.currentPlayer = 1;
+                                    tmpBoard.backHandRemainMovableChessNum = 20; // 需要设置，不然陷入死循环
+                                } else {
+                                    tmpBoard.currentPlayer = 0;
+                                    tmpBoard.firstHandRemainMovableChessNum = 20;
+                                }
+                                tmpBoard.board[u][v] = nowChessId;
+                                tmpBoard.board[i][j] = 0;
+                                ArrayList<Move> tmpMoves = new ArrayList<>();
                                 // 不用担心这段逻辑影响效率，当前只剩一个棋子，计算资源是过剩的
                                 for (int row = 0; row < BoardInfo.LENGTH; row++) {
                                     for (int col = 0; col < BoardInfo.HEIGHT; col++) {
-                                        int backupHunterChessId = board[row][col];
-                                        int backupHunterChessType = ChessType.getType(backupHunterChessId);
-                                        // 备选棋子不能动，跳过
-                                        if (backupHunterChessType == ChessType.FLAG_CHESS
-                                            || backupHunterChessType == ChessType.MINE_CHESS
-                                            || backupHunterChessType == ChessType.NO_CHESS) {
+                                        int tmpNowChessId = tmpBoard.board[row][col];
+                                        // 当前位置没有棋子不能移动，当前位置棋子是对方的，不能移动（0代表先手方，1代表后手方）
+                                        if(tmpNowChessId == 0
+                                           || tmpBoard.currentPlayer == 0 && tmpNowChessId >= 26
+                                           || tmpBoard.currentPlayer == 1 && tmpNowChessId <= 25) {
                                             continue;
                                         }
 
-                                        // TODO 备选棋子比当前棋子小，跳过
+                                        int tmpNowChessType = ChessType.getType(tmpNowChessId);
+                                        int tmpNowPositionType = PositionType.getType(row, col);
 
+                                        // 地雷和军旗不能动，大本营位置的棋子不能动
+                                        if (tmpNowChessType == ChessType.MINE_CHESS
+                                            || tmpNowChessType == ChessType.FLAG_CHESS
+                                            || tmpNowPositionType == PositionType.FLAG_POSITION) {
+                                            continue;
+                                        }
+
+                                        // 备选的棋子比当前棋子小，且当前棋子不是炸弹时，跳过
+                                        if (!ChessStrengthCompare.isStrongerOrEqualThan(tmpNowChessId, nowChessId)
+                                                && nowChessType != ChessType.BOOM_CHESS) {
+                                            continue;
+                                        }
+
+                                        ListUDG.canMoveTo(tmpBoard.board, row, col, u, v, tmpMoves);
                                     }
                                 }
 
-                                if (passFlag) {
+                                if (tmpMoves.size() != 0) {
                                     continue;
                                 }
                             }
