@@ -421,6 +421,17 @@ public class ListUDG {
         int targetChessType = ChessType.getType(targetChessId);
         int targetPositionType = PositionType.getType(targetX, targetY);
 
+        // 目标位置是大本营且里面棋子不是军旗，则不进去
+        if (targetPositionType == PositionType.FLAG_POSITION
+                && targetChessType != ChessType.FLAG_CHESS) {
+            return;
+        }
+
+        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
+        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
+            return;
+        }
+
         // （优化点）当前位置在铁路上，目标位置不是铁路，如果不直接相邻则不能移动到达
         if (nowPositionType == PositionType.RAILWAY_POSITION && targetPositionType != PositionType.RAILWAY_POSITION) {
             int index = nowY * BoardInfo.LENGTH + nowX;
