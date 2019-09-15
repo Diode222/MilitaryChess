@@ -41,7 +41,7 @@ public class Main {
 //
 //        JunQiBoard junQiBoard = new JunQiBoard();
 //        junQiBoard.initBoard(board);
-//        junQiBoard.currentPlayer = 0;
+//        junQiBoard.currentPlayer = 1;
 //
 //        ArrayList<Move> moves = new ArrayList<>();
 //
@@ -71,6 +71,8 @@ public class Main {
         for (int i = 0; i < 100; i++) {
             JunQiBoard junqi = new JunQiBoard();
             junqi.currentPlayer = 0;
+//            // TODO remove after test
+//            junqi.firstHandRemainMovableChessNum = 1;
             junqi.initBoard(new BoardLayout().getNormalLayoutFirst());
             while (!junqi.gameOver()) {
                 try {

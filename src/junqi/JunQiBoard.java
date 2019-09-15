@@ -337,10 +337,8 @@ public class JunQiBoard implements Board {
                         }
 
                         // 本方只剩一个可移动棋子时，只吃普通棋子，工兵和军旗，不要去碰炸弹和同样大的同归于尽
-                        // 目标位置是空位置时，如果走上去会被吃，则不要走上去
                         if (currentPlayer == 0 && firstHandRemainMovableChessNum == 1
-                            || currentPlayer == 1 && backHandRemainMovableChessNum == 1
-                            || targetChessId == 0) {
+                            || currentPlayer == 1 && backHandRemainMovableChessNum == 1) {
                             // 跳过炸弹
                             if (targetChessType == ChessType.BOOM_CHESS) {
                                 continue;
@@ -363,22 +361,10 @@ public class JunQiBoard implements Board {
                                 JunQiBoard tmpBoard = (JunQiBoard) this.duplicate();
                                 if (currentPlayer == 0) {
                                     tmpBoard.currentPlayer = 1;
-                                    if (firstHandRemainMovableChessNum != 1) {
-                                        // 说明走的是targetChessId == 0的逻辑
-                                        tmpBoard.backHandRemainMovableChessNum = backHandRemainMovableChessNum;
-                                    } else {
-                                        // 说明走的是firstHandRemainMovableChessNum == 1的逻辑
-                                        tmpBoard.backHandRemainMovableChessNum = 20; // 剩一个棋子时需要设置需要设置，不然陷入死循环
-                                    }
+                                    tmpBoard.backHandRemainMovableChessNum = 20; // 不设置可能死循环
                                 } else {
                                     tmpBoard.currentPlayer = 0;
-                                    if (backHandRemainMovableChessNum != 1) {
-                                        // 说明走的是targetChessId == 0的逻辑
-                                        tmpBoard.firstHandRemainMovableChessNum = firstHandRemainMovableChessNum;
-                                    } else {
-                                        // 说明走的是backHandRemainMovableChessNum == 1的逻辑
-                                        tmpBoard.firstHandRemainMovableChessNum = 20;
-                                    }
+                                    tmpBoard.firstHandRemainMovableChessNum = 20;
                                 }
                                 tmpBoard.board[u][v] = nowChessId;
                                 tmpBoard.board[i][j] = 0;
@@ -459,16 +445,16 @@ public class JunQiBoard implements Board {
         score = new double[2];
         if (!draw) {
             if (winner == 0) {
-                score[0] = 3500 + firstHandRealScore;
+                score[0] = 700 + firstHandRealScore;
                 score[1] = backHandRealScore;
             } else {
                 score[0] = firstHandRealScore;
-                score[1] = 3500 + backHandRealScore;
+                score[1] = 700 + backHandRealScore;
             }
         } else {
             // 平局各加(50+动态分)
-            score[0] = 1750 + firstHandRealScore;
-            score[1] = 1750 + backHandRealScore;
+            score[0] = 350 + firstHandRealScore;
+            score[1] = 350 + backHandRealScore;
         }
         return score;
     }
