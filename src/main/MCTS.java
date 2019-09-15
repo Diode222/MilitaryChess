@@ -55,7 +55,7 @@ public class MCTS {
 //			}
 
 			// 按照时间限制进行迭代
-			while ((System.nanoTime() - startTime) / 1000000 <= 2500) {
+			while ((System.nanoTime() - startTime) / 1000000 <= 25000) {
 				select(startingBoard.duplicate(), rootNode);
 			}
 		} else {
