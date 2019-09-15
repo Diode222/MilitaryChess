@@ -390,9 +390,10 @@ public class MilitaryBoard implements Board {
                                             continue;
                                         }
 
-                                        // 备选的棋子比当前棋子小，且当前棋子不是炸弹时，跳过
+                                        // 备选的棋子比当前棋子小，且当前棋子不是炸弹时，跳过（除了备选棋子时炸弹）
                                         if (!ChessStrengthCompare.isStrongerOrEqualThan(tmpNowChessId, nowChessId)
-                                                && nowChessType != ChessType.BOOM_CHESS) {
+                                                && nowChessType != ChessType.BOOM_CHESS
+                                                && tmpNowChessType != ChessType.BOOM_CHESS) {
                                             continue;
                                         }
 
