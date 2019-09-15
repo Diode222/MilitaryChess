@@ -324,8 +324,10 @@ public class JunQiBoard implements Board {
                         }
 
                         // 本方只剩一个可移动棋子时，只吃普通棋子，工兵和军旗，不要去碰炸弹和同样大的同归于尽
+                        // 目标位置是空位置时，如果走上去会被吃，则不要走上去
                         if (currentPlayer == 0 && firstHandRemainMovableChessNum == 1
-                            || currentPlayer == 1 && backHandRemainMovableChessNum == 1) {
+                            || currentPlayer == 1 && backHandRemainMovableChessNum == 1
+                            || targetChessId == 0) {
                             // 跳过炸弹
                             if (targetChessType == ChessType.BOOM_CHESS) {
                                 continue;
@@ -340,24 +342,35 @@ public class JunQiBoard implements Board {
                             /*
                                 跳过一些极端情况，比如吃了目标点会被吃，则跳过，
                                 需要判断棋盘所有对方棋子是否可以吃掉当前棋子，如果可以吃掉，
-                                再判断能否到达想目标位置，只有确认安全才去吃掉对方棋子
+                                再判断能否能到达目标位置，只有确认安全才去吃掉对方棋子或走到空位
                             */
                             // duplicate一个新棋盘用来表示吃后下一步的状态（部分需要的状态）
                             if (targetChessType != ChessType.FLAG_CHESS) {
                                 // 若目标点为军旗，则不跳过
-                                boolean passFlag = false;
                                 JunQiBoard tmpBoard = (JunQiBoard) this.duplicate();
                                 if (currentPlayer == 0) {
                                     tmpBoard.currentPlayer = 1;
-                                    tmpBoard.backHandRemainMovableChessNum = 20; // 需要设置，不然陷入死循环
+                                    if (firstHandRemainMovableChessNum != 1) {
+                                        // 说明走的是targetChessId == 0的逻辑
+                                        tmpBoard.backHandRemainMovableChessNum = backHandRemainMovableChessNum;
+                                    } else {
+                                        // 说明走的是firstHandRemainMovableChessNum == 1的逻辑
+                                        tmpBoard.backHandRemainMovableChessNum = 20; // 剩一个棋子时需要设置需要设置，不然陷入死循环
+                                    }
                                 } else {
                                     tmpBoard.currentPlayer = 0;
-                                    tmpBoard.firstHandRemainMovableChessNum = 20;
+                                    if (backHandRemainMovableChessNum != 1) {
+                                        // 说明走的是targetChessId == 0的逻辑
+                                        tmpBoard.firstHandRemainMovableChessNum = firstHandRemainMovableChessNum;
+                                    } else {
+                                        // 说明走的是backHandRemainMovableChessNum == 1的逻辑
+                                        tmpBoard.firstHandRemainMovableChessNum = 20;
+                                    }
                                 }
                                 tmpBoard.board[u][v] = nowChessId;
                                 tmpBoard.board[i][j] = 0;
                                 ArrayList<Move> tmpMoves = new ArrayList<>();
-                                // 不用担心这段逻辑影响效率，当前只剩一个棋子，计算资源是过剩的
+                                // 不用担心这段逻辑影响效率，当前只剩一个棋子，计算资源是过剩的(FIXME)
                                 for (int row = 0; row < BoardInfo.LENGTH; row++) {
                                     for (int col = 0; col < BoardInfo.HEIGHT; col++) {
                                         int tmpNowChessId = tmpBoard.board[row][col];
