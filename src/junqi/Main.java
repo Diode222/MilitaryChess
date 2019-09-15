@@ -51,7 +51,7 @@ public class Main {
         mcts.setOptimisticBias(0.0d);
         mcts.setPessimisticBias(0.0d);
         mcts.setMoveSelectionPolicy(FinalSelectionPolicy.robustChild);
-        int []scores = new int[3];
+        int []eachWinsCount = new int[3];
 
         for (int i = 0; i < 100; i++) {
             JunQiBoard junqi = new JunQiBoard();
@@ -64,17 +64,17 @@ public class Main {
             System.out.println("----------------");
             junqi.bPrint();
 
-            double []scr = junqi.getScore();
-            if (scr[0] > 0.9) {
-                scores[0]++;
-            } else if (scr[1] > 0.9) {
-                scores[1]++;
+            double []score = junqi.getScore();
+            if (score[0] > score[1]) {
+                eachWinsCount[0]++;
+            } else if (score[1] > score[0]) {
+                eachWinsCount[1]++;
             } else {
-                scores[2]++;
+                eachWinsCount[2]++;
             }
 
-            System.out.println(Arrays.toString(scr));
-            System.out.println(Arrays.toString(scores));
+            System.out.println(Arrays.toString(score));
+            System.out.println(Arrays.toString(eachWinsCount));
         }
     }
 }

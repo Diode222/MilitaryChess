@@ -86,10 +86,8 @@ public class MCTS {
 		long endTime = System.nanoTime();
 
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + rootNode.player);
+			// FIXME remove
 			System.out.println("Thinking time per move in milliseconds: " + (endTime - startTime) / 1000000);
-
-			// TODO 测试之后remove
 			System.out.println(">>>>>>>current player: " + (startingBoard.getCurrentPlayer() == 0 ? 1 : 0) + ">>>>>>>");
 			startingBoard.bPrint();
 			System.out.println(">>>>>>>>>>>>turnsHasNoBeEaten: " + startingBoard.getTurnsHasNEaten() + ">>>>>>>>>>>>>>>>>>>>>");
