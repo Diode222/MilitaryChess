@@ -1,4 +1,4 @@
-package main;
+package mcts;
 
 public interface Determinisable extends Board {
 

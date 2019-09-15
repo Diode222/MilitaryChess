@@ -1,6 +1,6 @@
-package main.support;
+package mcts.support;
 
-import main.Board;
+import mcts.Board;
 
 /**
  * Create a class implementing this interface and instantiate

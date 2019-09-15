@@ -1,7 +1,7 @@
-package main;
+package mcts;
 
-import main.support.HeuristicFunction;
-import main.support.PlayoutSelection;
+import mcts.support.HeuristicFunction;
+import mcts.support.PlayoutSelection;
 
 import java.util.ArrayList;
 import java.util.Random;

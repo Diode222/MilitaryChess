@@ -1,15 +1,15 @@
-package junqi;
+package militaryChess;
 
 import chessPostionInfo.Position;
-import main.Move;
+import mcts.Move;
 
 import java.util.List;
 
-public class JunQiMove implements main.Move {
+public class MilitaryMove implements mcts.Move {
 
     List<Position> points;
 
-    public JunQiMove(List<Position> points) {
+    public MilitaryMove(List<Position> points) {
         this.points = points;
     }
 

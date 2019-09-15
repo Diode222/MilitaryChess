@@ -1,4 +1,4 @@
-package main;
+package mcts;
 
 import java.util.ArrayList;
 

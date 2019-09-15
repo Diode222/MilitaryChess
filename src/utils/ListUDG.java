@@ -4,8 +4,8 @@ import chessPostionInfo.Position;
 import global.BoardInfo;
 import global.ChessType;
 import global.PositionType;
-import junqi.JunQiMove;
-import main.Move;
+import militaryChess.MilitaryMove;
+import mcts.Move;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -441,7 +441,7 @@ public class ListUDG {
                     List<Position> positions = new ArrayList<>(); // 找到的一条路径
                     positions.add(new Position().setX(nowX).setY(nowY).build());
                     positions.add(new Position().setX(targetX).setY(targetY).build());
-                    JunQiMove move = new JunQiMove(positions);
+                    MilitaryMove move = new MilitaryMove(positions);
                     moves.add(move);
                     return;
                 }
@@ -459,7 +459,7 @@ public class ListUDG {
                     List<Position> positions = new ArrayList<>(); // 找到的一条路径
                     positions.add(new Position().setX(nowX).setY(nowY).build());
                     positions.add(new Position().setX(targetX).setY(targetY).build());
-                    JunQiMove move = new JunQiMove(positions);
+                    MilitaryMove move = new MilitaryMove(positions);
                     moves.add(move);
                     return;
                 }
@@ -509,7 +509,7 @@ public class ListUDG {
                     List<Position> positions = new ArrayList<>(); // 找到的一条路径
                     positions.add(new Position().setX(nowX).setY(nowY).build());
                     positions.add(new Position().setX(targetX).setY(targetY).build());
-                    JunQiMove move = new JunQiMove(positions);
+                    MilitaryMove move = new MilitaryMove(positions);
                     moves.add(move);
                     return;
                 } else if (nowY != targetY) {
@@ -543,7 +543,7 @@ public class ListUDG {
                     List<Position> positions = new ArrayList<>(); // 找到的一条路径
                     positions.add(new Position().setX(nowX).setY(nowY).build());
                     positions.add(new Position().setX(targetX).setY(targetY).build());
-                    JunQiMove move = new JunQiMove(positions);
+                    MilitaryMove move = new MilitaryMove(positions);
                     moves.add(move);
                     return;
                 }
@@ -569,7 +569,7 @@ public class ListUDG {
             positions.add(Position.newBuilder().setX(x).setY(y).build());
             // 先对positions进行处理，得到拐弯点的记录（positions是所有点的记录）
             List<Position> positionsTurn = getPositionsTurn(positions);
-            JunQiMove move = new JunQiMove(positionsTurn);
+            MilitaryMove move = new MilitaryMove(positionsTurn);
             moves.add(move);
             return true;
         }
