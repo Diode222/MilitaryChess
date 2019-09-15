@@ -407,18 +407,6 @@ public class JunQiBoard implements Board {
                             }
                         }
 
-                        int targetPositionType = PositionType.getType(u, v);
-                        // 目标位置是大本营且里面棋子不是军旗，则不进去
-                        if (targetPositionType == PositionType.FLAG_POSITION
-                                && targetChessType != ChessType.FLAG_CHESS) {
-                            continue;
-                        }
-
-                        // 若目标位置是一个行营且已有棋子，则不用比较大小，直接判断不能进去
-                        if (targetPositionType == PositionType.CAMP_POSITION && targetChessId != 0) {
-                            continue;
-                        }
-
                         // 判断能够从(i, j)移动棋子到(u, v)，若能移动，将移动路径存入moves
                         ListUDG.canMoveTo(board, i, j, u, v, moves);
                     }
